@@ -7,6 +7,17 @@ into related work and back into a shared capability map.
 
 Stack: Next.js (App Router) + TypeScript + Tailwind CSS v4 + Framer Motion.
 
+## Two implementations live here
+
+- `design/avinash-console.html` — **the current design direction.** A
+  self-contained single-file build: a desk-scene opening that zooms through
+  the monitor into an operator console, an interactive voice-pipeline
+  latency lab, and a bipartite project/capability map. Open it directly in a
+  browser; no build step.
+- `src/` — the earlier multi-page Next.js draft. Same information
+  architecture and content, earlier visual direction. Not yet updated to
+  match the console design.
+
 ## Structure
 
 - `src/lib/content.ts` — single source of truth for all copy (resume facts +

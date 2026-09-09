@@ -1,0 +1,2496 @@
+<title>Avinash Garudapalli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
+
+<style>
+  :root {
+    --ground: #101722;
+    --ground-2: #0C121B;
+    --panel: #16202E;
+    --panel-2: #1B2736;
+    --rule: #26364E;
+    --rule-2: #35496A;
+    --paper: #EDE8DC;
+    --dim: #93A2BC;
+    --dim-2: #64748E;
+    --signal: #FFB03A;
+    --signal-deep: #7A5316;
+    --data: #6FE3F2;
+    --data-deep: #1E5A66;
+    --good: #79E0A8;
+
+    --f-display: "Chakra Petch", "Trebuchet MS", sans-serif;
+    --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --topbar-h: 52px;
+    --statusbar-h: 30px;
+    --measure: 66ch;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--paper);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: var(--statusbar-h);
+  }
+
+  /* ---------- backdrop: faint measurement grid ---------- */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(to right, rgba(53,73,106,.16) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(53,73,106,.10) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 120% 80% at 50% 0%, #000 20%, transparent 78%);
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: var(--topbar-h);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 0 20px;
+    background: rgba(12,18,27,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .mark {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: .04em;
+    color: var(--paper);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    white-space: nowrap;
+  }
+  .mark .dot {
+    width: 7px; height: 7px;
+    background: var(--signal);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(255,176,58,.16);
+    animation: pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.35 } }
+
+  .nav { display: flex; gap: 2px; margin-left: auto; }
+  .nav a {
+    font-family: var(--f-body);
+    font-size: .875rem;
+    font-weight: 450;
+    color: var(--dim);
+    text-decoration: none;
+    padding: 7px 11px;
+    border: 1px solid transparent;
+    transition: color .16s, border-color .16s;
+  }
+  .nav a:hover { color: var(--paper); border-color: var(--rule); }
+  .nav a[aria-current="page"] { color: var(--signal); border-color: var(--signal-deep); }
+
+  .kbd-open {
+    margin-left: 6px;
+    font-family: var(--f-mono);
+    font-size: .75rem;
+    color: var(--dim-2);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 6px 9px;
+    cursor: pointer;
+    transition: color .16s, border-color .16s;
+  }
+  .kbd-open:hover { color: var(--paper); border-color: var(--rule-2); }
+
+  /* ---------- layout ---------- */
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  section { padding: 68px 0; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: 0; }
+
+  h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+
+  h1 {
+    font-size: clamp(2rem, 4.4vw, 2.95rem);
+    font-weight: 700;
+    line-height: 1.06;
+    letter-spacing: -.015em;
+  }
+  h2 {
+    font-size: clamp(1.45rem, 3vw, 2.05rem);
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -.01em;
+  }
+  h3 { font-size: 1.1rem; font-weight: 600; line-height: 1.25; }
+
+  p { margin: 0; max-width: var(--measure); }
+  .lede { font-size: 1.075rem; color: var(--dim); line-height: 1.62; }
+
+  /* section head: left rule encodes section boundary, no eyebrow labels */
+  .sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 30px; }
+  .sec-head .idx {
+    font-family: var(--f-mono);
+    font-size: .8rem;
+    color: var(--dim-2);
+    padding-top: 4px;
+    white-space: nowrap;
+  }
+  .sec-head .txt { flex: 1; min-width: 0; }
+  .sec-head p { margin-top: 12px; color: var(--dim); font-size: .975rem; }
+
+  a { color: var(--data); }
+  a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, canvas:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+  }
+
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- panel: instrument chrome ---------- */
+  .panel {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 26px;
+  }
+  .panel::before, .panel::after {
+    content: "";
+    position: absolute;
+    width: 9px; height: 9px;
+    border-color: var(--rule-2);
+    border-style: solid;
+    pointer-events: none;
+  }
+  .panel::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+  .panel::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+  .panel-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .panel-title { font-family: var(--f-display); font-weight: 600; font-size: 1rem; letter-spacing: .01em; }
+  .panel-note { font-family: var(--f-mono); font-size: .72rem; color: var(--dim-2); line-height: 1.5; }
+
+  /* ---------- hero ---------- */
+  .hero { padding-top: 34px; padding-bottom: 56px; }
+  .console-line {
+    font-family: var(--f-mono);
+    font-size: .8rem;
+    color: var(--dim-2);
+    margin-bottom: 20px;
+    min-height: 1.3em;
+  }
+  .console-line b { color: var(--good); font-weight: 500; }
+  .caret {
+    display: inline-block;
+    width: 7px; height: 1em;
+    background: var(--signal);
+    vertical-align: -2px;
+    animation: blink 1.05s steps(1) infinite;
+  }
+  @keyframes blink { 0%,50% { opacity:1 } 50.01%,100% { opacity:0 } }
+
+  .hero h1 { max-width: 21ch; }
+  .hero .lede { margin-top: 16px; }
+  .hero-meta {
+    margin-top: 18px;
+    display: flex;
+    gap: 10px 26px;
+    flex-wrap: wrap;
+    font-family: var(--f-mono);
+    font-size: .8rem;
+    color: var(--dim-2);
+  }
+  .hero-meta span b { color: var(--dim); font-weight: 400; }
+
+  /* ---------- latency lab ---------- */
+  .lab { margin-top: 30px; }
+
+  .budget {
+    display: flex;
+    height: 54px;
+    border: 1px solid var(--rule-2);
+    overflow: hidden;
+    background: var(--ground-2);
+  }
+  .seg {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    border-right: 1px solid rgba(16,23,34,.7);
+    transition: flex-grow .55s cubic-bezier(.22,1,.36,1), background-color .3s;
+    overflow: hidden;
+  }
+  .seg:last-child { border-right: 0; }
+  .seg span {
+    font-family: var(--f-mono);
+    font-size: .68rem;
+    color: rgba(16,23,34,.86);
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 0 4px;
+  }
+  .seg.s-net { background: #3E5470; }
+  .seg.s-vad { background: #4E7E86; }
+  .seg.s-stt { background: var(--data); }
+  .seg.s-llm { background: var(--signal); }
+  .seg.s-tts { background: #E08A4C; }
+  .seg.s-out { background: #7C6A55; }
+
+  .track {
+    position: relative;
+    height: 20px;
+    margin-top: 2px;
+    border-left: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+  }
+  .packet {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 9px; height: 9px;
+    background: var(--signal);
+    border-radius: 50%;
+    box-shadow: 0 0 10px 2px rgba(255,176,58,.55);
+    animation: travel var(--dur, 3s) linear infinite;
+  }
+  @keyframes travel {
+    0%   { left: 0; opacity: 0; }
+    6%   { opacity: 1; }
+    94%  { opacity: 1; }
+    100% { left: calc(100% - 9px); opacity: 0; }
+  }
+  .lab.paused .packet { animation-play-state: paused; }
+
+  .lab-readout {
+    display: flex;
+    align-items: flex-end;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+  }
+  .readout-big {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    line-height: .95;
+    color: var(--signal);
+    letter-spacing: -.02em;
+  }
+  .readout-big .unit { font-size: .38em; color: var(--dim); margin-left: 6px; letter-spacing: 0; }
+  .readout-label { font-size: .85rem; color: var(--dim); margin-top: 8px; max-width: 34ch; }
+  .verdict {
+    font-family: var(--f-mono);
+    font-size: .78rem;
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    color: var(--dim);
+    background: var(--ground-2);
+    line-height: 1.45;
+    max-width: 40ch;
+  }
+  .verdict.hit { border-color: var(--good); color: var(--good); }
+
+  .toggles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(216px, 1fr));
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .tg {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 13px 14px;
+    background: var(--ground-2);
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: var(--dim);
+    transition: border-color .16s, color .16s, background-color .16s;
+  }
+  .tg:hover { border-color: var(--rule-2); color: var(--paper); }
+  .tg[aria-pressed="true"] { border-color: var(--signal-deep); background: rgba(255,176,58,.06); color: var(--paper); }
+  .tg .led {
+    flex: none;
+    width: 9px; height: 9px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--rule-2);
+    transition: background-color .2s, box-shadow .2s;
+  }
+  .tg[aria-pressed="true"] .led { background: var(--signal); box-shadow: 0 0 8px 1px rgba(255,176,58,.6); }
+  .tg .tg-name { display: block; font-size: .9rem; font-weight: 500; line-height: 1.3; }
+  .tg .tg-delta { display: block; font-family: var(--f-mono); font-size: .74rem; color: var(--dim-2); margin-top: 3px; }
+  .tg[aria-pressed="true"] .tg-delta { color: var(--signal); }
+
+  .lab-controls { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .btn-ghost {
+    font-family: var(--f-mono);
+    font-size: .76rem;
+    color: var(--dim);
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 8px 13px;
+    cursor: pointer;
+    transition: color .16s, border-color .16s;
+  }
+  .btn-ghost:hover { color: var(--paper); border-color: var(--rule-2); }
+
+  /* ---------- readouts (impact) ---------- */
+  .readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .ro { background: var(--ground); padding: 22px 20px; }
+  .ro .v {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 2.1rem;
+    line-height: 1;
+    letter-spacing: -.02em;
+    color: var(--data);
+  }
+  .ro .k { font-size: .92rem; font-weight: 500; margin-top: 10px; }
+  .ro .d { font-size: .82rem; color: var(--dim-2); margin-top: 6px; line-height: 1.5; }
+
+  /* ---------- capability map (bipartite, deterministic layout) ---------- */
+  .mapx-shell { border: 1px solid var(--rule); background: var(--ground-2); }
+  .mapx-scroll { overflow-x: auto; padding: 22px 20px 8px; }
+  .mapx { display: block; width: 100%; min-width: 660px; max-width: 880px; margin: 0 auto; }
+
+  .mapx .lnk {
+    fill: none;
+    stroke: #35496A;
+    stroke-width: 1;
+    opacity: .55;
+    transition: stroke .18s, opacity .18s, stroke-width .18s;
+  }
+  .mapx .lnk.on { stroke: var(--signal); stroke-width: 1.8; opacity: 1; }
+  .mapx.isolating .lnk:not(.on) { opacity: .08; }
+
+  .mapx .node-box {
+    fill: #131C29;
+    stroke: #40587C;
+    stroke-width: 1;
+    transition: stroke .18s, fill .18s;
+  }
+  .mapx .node-name { fill: var(--paper); font-family: "Chakra Petch", sans-serif; font-weight: 600; font-size: 13px; }
+  .mapx .node-sub { fill: var(--dim-2); font-family: "IBM Plex Mono", monospace; font-size: 9.5px; }
+
+  .mapx .proj { cursor: pointer; }
+  .mapx .proj:hover .node-box,
+  .mapx .proj:focus-visible .node-box { stroke: var(--signal); fill: rgba(255,176,58,.09); }
+  .mapx .proj:hover .node-name,
+  .mapx .proj:focus-visible .node-name { fill: var(--signal); }
+  .mapx .proj:focus { outline: none; }
+  .mapx .proj:focus-visible .node-box { stroke-width: 2; }
+
+  .mapx .cap-box { fill: #131C29; stroke: #2E3D57; stroke-width: 1; transition: stroke .18s, fill .18s; }
+  .mapx .cap-name { fill: var(--dim); font-family: "IBM Plex Sans", sans-serif; font-weight: 500; font-size: 12px; transition: fill .18s; }
+  .mapx .cap.on .cap-box { stroke: var(--data); fill: rgba(111,227,242,.07); }
+  .mapx .cap.on .cap-name { fill: var(--data); }
+
+  .mapx .col-head { fill: var(--dim-2); font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: .06em; }
+
+  .mapx-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--f-mono);
+    font-size: .74rem;
+    color: var(--dim-2);
+  }
+  .mapx-foot b { color: var(--signal); font-weight: 400; }
+
+  /* ---------- trace / timeline (a real sequence, so numbered) ---------- */
+  .trace { display: grid; gap: 0; }
+  .trace-row {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 20px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule);
+    align-items: start;
+  }
+  .trace-row:last-child { border-bottom: 1px solid var(--rule); }
+  .trace-n { font-family: var(--f-mono); font-size: .8rem; color: var(--signal); padding-top: 3px; }
+  .trace-stage { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; }
+  .trace-role { color: var(--dim); font-size: .9rem; margin-top: 3px; }
+  .trace-when { font-family: var(--f-mono); font-size: .76rem; color: var(--dim-2); margin-top: 4px; }
+
+  /* ---------- capability matrix (not a sequence: no numbers) ---------- */
+  .matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px 34px; }
+  .cap { border-left: 2px solid var(--rule-2); padding-left: 16px; }
+  .cap h3 { color: var(--paper); }
+  .cap p { color: var(--dim); font-size: .92rem; margin-top: 7px; }
+
+  /* ---------- work index ---------- */
+  .work-list { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .work-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px 24px;
+    align-items: center;
+    background: var(--ground);
+    padding: 24px 22px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color .18s;
+  }
+  .work-item:hover { background: var(--panel); }
+  .work-item:hover .work-org { color: var(--signal); }
+  .work-org { font-family: var(--f-display); font-weight: 600; font-size: 1.25rem; transition: color .18s; }
+  .work-line { color: var(--dim); font-size: .95rem; margin-top: 6px; max-width: 62ch; }
+  .work-when { font-family: var(--f-mono); font-size: .76rem; color: var(--dim-2); text-align: right; white-space: nowrap; }
+
+  /* ---------- case study ---------- */
+  .cs-head { padding: 46px 0 34px; border-bottom: 1px solid var(--rule); }
+  .cs-org { font-family: var(--f-mono); font-size: .82rem; color: var(--signal); }
+  .cs-head h1 { margin-top: 14px; max-width: 20ch; }
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 30px;
+  }
+  .spec div { background: var(--ground); padding: 14px 16px; }
+  .spec dt { font-family: var(--f-mono); font-size: .72rem; color: var(--dim-2); }
+  .spec dd { margin: 6px 0 0; font-size: .9rem; line-height: 1.45; }
+
+  .qa { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 28px; }
+  .qa h3 { color: var(--signal); font-size: .95rem; }
+  .qa p { color: var(--dim); font-size: .93rem; margin-top: 9px; }
+
+  details.init {
+    border: 1px solid var(--rule);
+    background: var(--panel);
+    margin-bottom: 10px;
+  }
+  details.init[open] { border-color: var(--rule-2); }
+  details.init summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  details.init summary::-webkit-details-marker { display: none; }
+  .init-caret {
+    font-family: var(--f-mono);
+    color: var(--dim-2);
+    font-size: .85rem;
+    line-height: 1.5;
+    transition: transform .2s;
+  }
+  details.init[open] .init-caret { transform: rotate(90deg); color: var(--signal); }
+  .init-name { font-family: var(--f-display); font-weight: 600; font-size: 1.06rem; }
+  .init-sum { color: var(--dim); font-size: .92rem; margin-top: 6px; }
+  .init-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+  .tag {
+    font-family: var(--f-mono);
+    font-size: .68rem;
+    color: var(--dim-2);
+    border: 1px solid var(--rule);
+    padding: 3px 7px;
+  }
+  .init-body { padding: 0 20px 20px 54px; }
+  .init-body li { color: var(--dim); font-size: .92rem; margin-bottom: 9px; line-height: 1.58; }
+  .init-body ul { margin: 0; padding-left: 18px; }
+  .init-body li::marker { color: var(--rule-2); }
+
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .chain .link {
+    font-family: var(--f-mono);
+    font-size: .76rem;
+    color: var(--data);
+    border: 1px solid var(--data-deep);
+    padding: 6px 10px;
+  }
+  .chain .arr { color: var(--dim-2); font-family: var(--f-mono); }
+
+  .learn { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+  .learn ul { margin: 12px 0 0; padding: 0; list-style: none; }
+  .learn li { color: var(--dim); font-size: .93rem; border-left: 2px solid var(--rule-2); padding-left: 14px; margin-bottom: 14px; line-height: 1.58; }
+
+  /* ---------- journey ---------- */
+  .jstage { border-top: 1px solid var(--rule); padding: 30px 0; display: grid; grid-template-columns: 210px 1fr; gap: 26px; }
+  .jstage h3 { font-size: 1.12rem; }
+  .jwhen { font-family: var(--f-mono); font-size: .76rem; color: var(--dim-2); margin-top: 6px; }
+  .jentry { background: var(--panel); border: 1px solid var(--rule); padding: 20px; margin-bottom: 12px; }
+  .jentry-top { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; align-items: baseline; }
+  .jentry-org { font-family: var(--f-display); font-weight: 600; font-size: 1.05rem; }
+  .jentry-meta { font-family: var(--f-mono); font-size: .74rem; color: var(--dim-2); }
+  .jentry-role { color: var(--signal); font-size: .88rem; margin-top: 3px; }
+  .jentry ul { margin: 12px 0 0; padding-left: 18px; }
+  .jentry li { color: var(--dim); font-size: .91rem; margin-bottom: 7px; line-height: 1.55; }
+  .jentry li::marker { color: var(--rule-2); }
+
+  /* ---------- lab / experiments ---------- */
+  .exp { border: 1px solid var(--rule); background: var(--panel); padding: 24px; margin-bottom: 14px; }
+  .exp-top { display: flex; justify-content: space-between; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+  .exp h3 { font-size: 1.15rem; }
+  .status {
+    font-family: var(--f-mono);
+    font-size: .7rem;
+    padding: 4px 9px;
+    border: 1px solid var(--rule-2);
+    color: var(--dim);
+  }
+  .exp dl { margin: 16px 0 0; display: grid; gap: 12px; }
+  .exp dt { font-family: var(--f-mono); font-size: .72rem; color: var(--signal); }
+  .exp dd { margin: 5px 0 0; color: var(--dim); font-size: .93rem; line-height: 1.58; }
+
+  /* ---------- process (a real sequence) ---------- */
+  .steps { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .step { background: var(--ground); padding: 18px 20px; display: grid; grid-template-columns: 46px 150px 1fr; gap: 18px; align-items: baseline; }
+  .step-n { font-family: var(--f-mono); font-size: .8rem; color: var(--signal); }
+  .step-name { font-family: var(--f-display); font-weight: 600; font-size: 1rem; }
+  .step-d { color: var(--dim); font-size: .9rem; }
+
+  /* ---------- about / contact ---------- */
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 34px; }
+  .stack { display: grid; gap: 18px; }
+  .entry-t { font-weight: 600; font-size: .97rem; }
+  .entry-s { color: var(--dim); font-size: .9rem; margin-top: 3px; }
+  .entry-m { font-family: var(--f-mono); font-size: .74rem; color: var(--dim-2); margin-top: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .chip { font-family: var(--f-mono); font-size: .72rem; color: var(--dim); border: 1px solid var(--rule); padding: 5px 9px; }
+
+  .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .contact-cell { background: var(--ground); padding: 24px 22px; text-decoration: none; color: inherit; display: block; transition: background-color .18s; }
+  .contact-cell:hover { background: var(--panel); }
+  .contact-cell .ck { font-family: var(--f-mono); font-size: .74rem; color: var(--dim-2); }
+  .contact-cell .cv { font-size: 1rem; margin-top: 8px; word-break: break-word; }
+  .contact-cell:hover .cv { color: var(--signal); }
+
+  /* ---------- related ---------- */
+  .rel { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .rel a { background: var(--ground); padding: 22px; text-decoration: none; color: inherit; transition: background-color .18s; }
+  .rel a:hover { background: var(--panel); }
+  .rel a:hover .rel-t { color: var(--signal); }
+  .rel-k { font-family: var(--f-mono); font-size: .73rem; color: var(--dim-2); }
+  .rel-t { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; margin-top: 8px; transition: color .18s; }
+  .rel-d { color: var(--dim); font-size: .88rem; margin-top: 7px; }
+
+  /* ---------- status bar ---------- */
+  .statusbar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 45;
+    height: var(--statusbar-h);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 14px;
+    background: var(--ground-2);
+    border-top: 1px solid var(--rule);
+    font-family: var(--f-mono);
+    font-size: .72rem;
+    color: var(--dim-2);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .statusbar .sb-route { color: var(--signal); }
+  .statusbar button {
+    font: inherit;
+    background: transparent;
+    border: 0;
+    color: var(--dim-2);
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .statusbar button:hover { color: var(--paper); }
+  .sb-right { margin-left: auto; display: flex; gap: 18px; }
+
+  /* ---------- command palette ---------- */
+  .palette-scrim {
+    position: fixed; inset: 0; z-index: 60;
+    background: rgba(8,12,18,.72);
+    display: none;
+    padding-top: 12vh;
+    justify-content: center;
+  }
+  .palette-scrim.open { display: flex; }
+  .palette {
+    width: min(560px, 92vw);
+    height: fit-content;
+    background: var(--panel);
+    border: 1px solid var(--rule-2);
+    box-shadow: 0 30px 70px rgba(0,0,0,.55);
+  }
+  .palette input {
+    width: 100%;
+    font-family: var(--f-mono);
+    font-size: .95rem;
+    color: var(--paper);
+    background: var(--ground-2);
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    padding: 16px 18px;
+    outline: none;
+  }
+  .palette input::placeholder { color: var(--dim-2); }
+  .palette ul { list-style: none; margin: 0; padding: 6px; max-height: 46vh; overflow-y: auto; }
+  .palette li a {
+    display: flex; justify-content: space-between; gap: 14px;
+    padding: 11px 13px;
+    text-decoration: none;
+    color: var(--dim);
+    font-size: .92rem;
+  }
+  .palette li a .p-path { font-family: var(--f-mono); font-size: .74rem; color: var(--dim-2); }
+  .palette li[data-active="true"] a { background: var(--ground-2); color: var(--paper); }
+  .palette li[data-active="true"] a .p-path { color: var(--signal); }
+  .palette-empty { padding: 18px; color: var(--dim-2); font-size: .88rem; }
+
+  /* ---------- opening scene: the desk ---------- */
+  .stage {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse 90% 70% at 50% 44%, #16202E 0%, #0B111A 55%, #070B11 100%);
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .stage.live { display: flex; }
+  .stage-inner {
+    width: min(1180px, 96vw);
+    transform-origin: 50% 40%;
+    will-change: transform, opacity;
+  }
+  .scene { display: block; width: 100%; height: auto; }
+
+  .scroll-cue {
+    position: absolute;
+    left: 50%;
+    bottom: 34px;
+    transform: translateX(-50%);
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-family: var(--f-mono);
+    font-size: .74rem;
+    letter-spacing: .08em;
+    color: var(--dim);
+    padding: 8px 14px;
+  }
+  .scroll-cue:hover { color: var(--signal); }
+  .scroll-cue .chev {
+    width: 15px; height: 15px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    animation: nudge 1.9s ease-in-out infinite;
+  }
+  @keyframes nudge {
+    0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: .5; }
+    50% { transform: rotate(45deg) translate(3px, 3px); opacity: 1; }
+  }
+
+  /* screen glow pulse */
+  .scr-glow { animation: glow 5.5s ease-in-out infinite; transform-origin: center; }
+  @keyframes glow { 0%, 100% { opacity: .5 } 50% { opacity: .82 } }
+
+  .rgb-strip { animation: rgbshift 9s linear infinite; }
+  @keyframes rgbshift { 0% { opacity: .5 } 50% { opacity: .85 } 100% { opacity: .5 } }
+
+  #spacer { height: 0; }
+  #spacer.on { height: 172vh; }
+
+  /* reduced-motion / no-JS variant: scene sits in normal flow */
+  body.static-intro .stage.live {
+    position: relative;
+    display: flex;
+    min-height: 92vh;
+    z-index: 1;
+  }
+  body.static-intro #spacer.on { height: 0; }
+  body.static-intro .scroll-cue .chev { animation: none; }
+
+  /* ---------- footer ---------- */
+  .site-footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--rule);
+    background: var(--ground-2);
+    margin-top: 40px;
+  }
+  .foot-wrap { max-width: 1080px; margin: 0 auto; padding: 46px 20px 34px; }
+  .foot-top { display: grid; grid-template-columns: 1fr 1.45fr; gap: 34px; align-items: start; }
+  .foot-name { font-family: var(--f-display); font-weight: 700; font-size: 1.28rem; letter-spacing: -.01em; }
+  .foot-role { color: var(--dim); font-size: .93rem; margin-top: 7px; max-width: 40ch; }
+
+  .foot-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 22px; }
+  .foot-fact dt { font-family: var(--f-mono); font-size: .71rem; color: var(--dim-2); letter-spacing: .04em; }
+  .foot-fact dd { margin: 7px 0 0; font-size: .9rem; line-height: 1.45; }
+
+  .foot-reach { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
+  .reach {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    color: var(--paper);
+    border: 1px solid var(--rule);
+    background: var(--panel);
+    padding: 11px 15px;
+    font-size: .9rem;
+    transition: border-color .16s, color .16s, background-color .16s;
+  }
+  .reach:hover { border-color: var(--signal-deep); color: var(--signal); background: rgba(255,176,58,.06); }
+  .reach svg { width: 16px; height: 16px; flex: none; }
+  .reach .rlabel { font-family: var(--f-mono); font-size: .73rem; color: var(--dim-2); }
+  .reach:hover .rlabel { color: var(--signal); }
+
+  .foot-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 38px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--f-mono);
+    font-size: .73rem;
+    color: var(--dim-2);
+  }
+  .foot-nav { display: flex; flex-wrap: wrap; gap: 16px; }
+  .foot-nav a { color: var(--dim); text-decoration: none; }
+  .foot-nav a:hover { color: var(--signal); }
+
+  @media (max-width: 780px) {
+    .foot-top { grid-template-columns: 1fr; gap: 26px; }
+  }
+
+  /* ---------- misc ---------- */
+  .stack-24 > * + * { margin-top: 24px; }
+  .back {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: .78rem;
+    color: var(--dim);
+    text-decoration: none;
+    margin-top: 26px;
+  }
+  .back:hover { color: var(--signal); }
+
+  @media (max-width: 780px) {
+    .nav { display: none; }
+    .jstage, .step { grid-template-columns: 1fr; gap: 12px; }
+    .work-item { grid-template-columns: 1fr; }
+    .work-when { text-align: left; }
+    section { padding: 48px 0; }
+    #map { height: 380px; }
+    .init-body { padding-left: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    .packet { display: none; }
+  }
+</style>
+
+<div class="backdrop" aria-hidden="true"></div>
+
+<div class="stage" id="stage">
+  <div class="stage-inner" id="stageInner">
+    <svg class="scene" viewBox="0 0 1200 700" role="img" aria-labelledby="sceneTitle sceneDesc">
+      <title id="sceneTitle">Avinash, a metacognist and philomath</title>
+      <desc id="sceneDesc">A desk at night seen from behind: a person sits at a PC setup, and the monitor reads “Avinash — a Metacognist &amp; Philomath”.</desc>
+
+      <defs>
+        <radialGradient id="gGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#6FE3F2" stop-opacity=".34"/>
+          <stop offset="60%" stop-color="#3E7E9C" stop-opacity=".10"/>
+          <stop offset="100%" stop-color="#6FE3F2" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="gSpill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#6FE3F2" stop-opacity=".16"/>
+          <stop offset="100%" stop-color="#6FE3F2" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="gLamp" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FFB03A" stop-opacity=".30"/>
+          <stop offset="100%" stop-color="#FFB03A" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="gRgb" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#6FE3F2" stop-opacity=".55"/>
+          <stop offset="50%" stop-color="#A78BFA" stop-opacity=".45"/>
+          <stop offset="100%" stop-color="#FFB03A" stop-opacity=".55"/>
+        </linearGradient>
+        <linearGradient id="gDesk" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2E3F58"/>
+          <stop offset="100%" stop-color="#1E2A3A"/>
+        </linearGradient>
+        <filter id="fBlur" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="16"/>
+        </filter>
+        <filter id="fBlurSm" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="6"/>
+        </filter>
+        <clipPath id="clipScreen">
+          <rect x="344" y="126" width="512" height="272" rx="4"/>
+        </clipPath>
+      </defs>
+
+      <!-- ambient glow behind the monitor -->
+      <ellipse class="scr-glow" cx="600" cy="270" rx="430" ry="250" fill="url(#gGlow)" filter="url(#fBlur)"/>
+
+      <!-- light spill from screen onto desk -->
+      <polygon points="352,398 848,398 1000,470 200,470" fill="url(#gSpill)"/>
+
+      <!-- desk lamp, right -->
+      <g stroke="#2B3A52" stroke-width="4" fill="none" stroke-linecap="round">
+        <path d="M1006 468 L1006 392 L952 316"/>
+      </g>
+      <ellipse cx="1006" cy="468" rx="34" ry="8" fill="#1A2432"/>
+      <path d="M916 296 L992 330 L968 360 L900 322 Z" fill="#22304A" stroke="#33465F" stroke-width="2"/>
+      <polygon points="912,330 972,358 1090,470 830,470" fill="url(#gLamp)"/>
+
+      <!-- plant, far left -->
+      <path d="M148 424 C120 396 122 356 148 340 C160 366 162 400 152 424 Z" fill="#1E3A34"/>
+      <path d="M156 426 C188 402 196 366 178 344 C160 366 150 400 152 426 Z" fill="#27473F"/>
+      <path d="M126 430 h60 l-8 40 h-44 Z" fill="#2A3547" stroke="#3A4761" stroke-width="1.5"/>
+
+      <!-- laptop, left -->
+      <path d="M232 372 L346 388 L346 452 L232 440 Z" fill="#16202E" stroke="#33465F" stroke-width="2"/>
+      <path d="M240 380 L338 394 L338 444 L240 434 Z" fill="#0E1826"/>
+      <path d="M240 388 L330 400" stroke="#3E6B7E" stroke-width="2"/>
+      <path d="M240 400 L306 410" stroke="#2E5163" stroke-width="2"/>
+      <path d="M226 448 L354 460 L344 470 L216 458 Z" fill="#1C2739" stroke="#33465F" stroke-width="1.5"/>
+
+      <!-- desk speaker, left of keyboard -->
+      <rect x="350" y="394" width="42" height="68" rx="4" fill="#18232F" stroke="#3B4F6C" stroke-width="2"/>
+      <circle cx="371" cy="414" r="10" fill="#0E1826" stroke="#33465F" stroke-width="1.5"/>
+      <circle cx="371" cy="442" r="6" fill="#0E1826" stroke="#33465F" stroke-width="1.5"/>
+
+      <!-- mug, right of keyboard -->
+      <path d="M792 424 h44 v34 a10 10 0 0 1 -10 10 h-24 a10 10 0 0 1 -10 -10 Z" fill="#22304A" stroke="#3D5271" stroke-width="2"/>
+      <path d="M836 432 a12 12 0 0 1 0 22" fill="none" stroke="#3D5271" stroke-width="3"/>
+      <ellipse cx="814" cy="424" rx="22" ry="6" fill="#2E3F5C"/>
+
+      <!-- monitor -->
+      <rect x="586" y="418" width="28" height="50" fill="#1C2739"/>
+      <rect x="516" y="462" width="168" height="12" rx="6" fill="#22304A"/>
+      <rect x="330" y="112" width="540" height="312" rx="9" fill="#111A26" stroke="#33465F" stroke-width="3"/>
+      <rect x="344" y="126" width="512" height="272" rx="4" fill="#080D15"/>
+
+      <g clip-path="url(#clipScreen)">
+        <!-- window chrome -->
+        <rect x="344" y="126" width="512" height="28" fill="#131D2B"/>
+        <circle cx="362" cy="140" r="4" fill="#FF7A5C"/>
+        <circle cx="378" cy="140" r="4" fill="#FFB03A"/>
+        <circle cx="394" cy="140" r="4" fill="#79E0A8"/>
+        <text x="416" y="144" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="#5A6478">avinash — session 01</text>
+
+        <!-- screen content -->
+        <text x="378" y="200" font-family="'IBM Plex Mono', monospace" font-size="13" fill="#79E0A8">&gt; whoami</text>
+        <text id="scName" x="376" y="266" font-family="'Chakra Petch', sans-serif" font-weight="700" font-size="62" fill="#EDE8DC" letter-spacing="-1"></text>
+        <text id="scTag" x="379" y="308" font-family="'IBM Plex Sans', sans-serif" font-weight="400" font-size="21" fill="#FFB03A"></text>
+        <rect id="scCaret" x="379" y="290" width="10" height="22" fill="#FFB03A"/>
+        <text x="379" y="360" font-family="'IBM Plex Mono', monospace" font-size="11.5" fill="#4C596F">voice AI · product · ux · business</text>
+
+        <!-- scanlines -->
+        <rect x="344" y="126" width="512" height="272" fill="url(#gSpill)" opacity=".25"/>
+      </g>
+
+      <!-- desk -->
+      <rect x="70" y="458" width="1060" height="30" rx="3" fill="url(#gDesk)"/>
+      <rect x="70" y="458" width="1060" height="2" fill="#6FE3F2" opacity=".22"/>
+      <rect x="70" y="488" width="1060" height="15" fill="#141D2A"/>
+      <rect x="130" y="506" width="940" height="9" rx="4" fill="url(#gRgb)" class="rgb-strip" filter="url(#fBlurSm)"/>
+
+      <!-- keyboard -->
+      <rect x="452" y="466" width="298" height="28" rx="5" fill="#16202E" stroke="#2E3F5C" stroke-width="2"/>
+      <g fill="#26364E">
+        <rect x="462" y="473" width="24" height="6" rx="2"/><rect x="492" y="473" width="24" height="6" rx="2"/>
+        <rect x="522" y="473" width="24" height="6" rx="2"/><rect x="552" y="473" width="24" height="6" rx="2"/>
+        <rect x="582" y="473" width="24" height="6" rx="2"/><rect x="612" y="473" width="24" height="6" rx="2"/>
+        <rect x="642" y="473" width="24" height="6" rx="2"/><rect x="672" y="473" width="24" height="6" rx="2"/>
+        <rect x="702" y="473" width="34" height="6" rx="2"/>
+        <rect x="500" y="483" width="180" height="6" rx="2"/>
+      </g>
+
+      <!-- mouse -->
+      <ellipse cx="786" cy="480" rx="16" ry="22" fill="#1A2432" stroke="#2E3F5C" stroke-width="2"/>
+      <path d="M786 462 v14" stroke="#2E3F5C" stroke-width="2"/>
+
+      <!-- person, seen from behind -->
+      <!-- chair back, peeking out either side of the shoulders -->
+      <rect x="444" y="628" width="312" height="74" rx="22" fill="#0A1018" stroke="#2A3B52" stroke-width="2"/>
+      <!-- torso -->
+      <path d="M462 700 C 466 636, 514 600, 600 600 C 686 600, 734 636, 738 700 Z"
+            fill="#070C13" stroke="#2A3B52" stroke-width="2"/>
+      <!-- head -->
+      <ellipse cx="600" cy="552" rx="53" ry="58" fill="#070C13" stroke="#2A3B52" stroke-width="2"/>
+      <!-- neck: hides the seam where head meets shoulders -->
+      <rect x="574" y="592" width="52" height="26" fill="#070C13"/>
+      <!-- headphones -->
+      <path d="M548 534 a52 50 0 0 1 104 0" fill="none" stroke="#43597A" stroke-width="7" stroke-linecap="round"/>
+      <rect x="536" y="536" width="18" height="34" rx="8" fill="#22304A" stroke="#43597A" stroke-width="2"/>
+      <rect x="646" y="536" width="18" height="34" rx="8" fill="#22304A" stroke="#43597A" stroke-width="2"/>
+      <!-- rim light thrown by the screen -->
+      <path d="M462 700 C 466 636, 514 600, 600 600 C 686 600, 734 636, 738 700"
+            fill="none" stroke="#6FE3F2" stroke-opacity=".40" stroke-width="2.5"/>
+      <path d="M556 522 a53 58 0 0 1 88 0" fill="none" stroke="#6FE3F2" stroke-opacity=".34" stroke-width="2.5"/>
+    </svg>
+  </div>
+
+  <button class="scroll-cue" id="scrollCue" type="button">
+    <span>scroll to enter</span>
+    <span class="chev" aria-hidden="true"></span>
+  </button>
+</div>
+
+<header class="topbar" id="topbar">
+  <a class="mark" href="#/"><span class="dot" aria-hidden="true"></span>Avinash Garudapalli</a>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <button class="kbd-open" id="paletteBtn" aria-haspopup="dialog">⌘K</button>
+</header>
+
+<div id="spacer"></div>
+
+<main class="wrap" id="view" tabindex="-1"></main>
+
+<footer class="site-footer" id="siteFooter"></footer>
+
+<div class="statusbar" role="status">
+  <span>route <span class="sb-route" id="sbRoute">#/</span></span>
+  <span id="sbTitle"></span>
+  <span class="sb-right">
+    <button id="motionBtn" aria-pressed="true">motion on</button>
+    <span id="sbClock" class="num"></span>
+  </span>
+</div>
+
+<div class="palette-scrim" id="paletteScrim">
+  <div class="palette" role="dialog" aria-modal="true" aria-label="Jump to section">
+    <input id="paletteInput" type="text" placeholder="Jump to…" autocomplete="off" spellcheck="false">
+    <ul id="paletteList"></ul>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =========================================================
+     CONTENT — sourced from the resume and the supplied sitemap.
+     ========================================================= */
+
+  var PROFILE = {
+    name: "Avinashdev Ravikumar Garudapalli",
+    email: "avinashdevg09@gmail.com",
+    phone: "+91 7303486776",
+    linkedin: "https://www.linkedin.com/in/avinashdev09/",
+    summary: "Associate Product Manager with 2+ years building 0-to-1 AI and SaaS products, including Voice AI and Generative AI solutions. Track record of measurable outcomes through product strategy, automation and data-driven execution — plus end-to-end business ownership as a founder."
+  };
+
+  var IMPACT = [
+    { v: "50%", k: "Voice latency cut", d: "AI workflow optimization and noise suppression on the Chat360 Voice AI platform" },
+    { v: "50%", k: "MRR growth", d: "Scaled monthly recurring revenue at Nosh House Cafe as founder" },
+    { v: "9 mo", k: "To operational break-even", d: "Nosh House Cafe, from taking over the business" },
+    { v: "20%", k: "Support queries removed", d: "Voice AI deployed across Cordelia Cruises customer touchpoints" },
+    { v: "15%", k: "Operational cost cut", d: "Automating customer interactions with Voice AI at Cordelia Cruises" },
+    { v: "5", k: "Channels shipped", d: "Voice, WhatsApp, SMS, Email and RCS on one omnichannel platform" }
+  ];
+
+  var TRACE = [
+    { stage: "Leadership", role: "Sponsorship Head, College Fest", when: "Jan 2018 — Mar 2018" },
+    { stage: "Business development", role: "Business Development Manager, AIESEC", when: "Mar 2020 — Aug 2020" },
+    { stage: "UX and design", role: "UI/UX Designer, Yapita Health", when: "Jun 2023 — Aug 2023" },
+    { stage: "Product management", role: "Product Analyst, Cordelia Cruises", when: "Nov 2023 — Jan 2025" },
+    { stage: "AI product management", role: "Associate Product Manager, Chat360", when: "Jan 2025 — Jun 2025" },
+    { stage: "Business ownership", role: "Founder, Nosh House Cafe", when: "May 2025 — present" }
+  ];
+
+  var CAPS = {
+    "ai-product": { label: "AI product", d: "Voice AI pipelines, GenAI billing, agentic workflows, model selection" },
+    "product-strategy": { label: "Product strategy", d: "Roadmapping, prioritization, MVP scoping, business alignment" },
+    "ux": { label: "UX", d: "Research, journeys, wireframes, prototypes, usability analysis" },
+    "analytics": { label: "Analytics", d: "Funnel, flow, sentiment and KPI dashboards built for decisions" },
+    "technical-product": { label: "Technical product", d: "APIs, webhooks, architecture trade-offs, cross-functional execution" },
+    "business-growth": { label: "Business and growth", d: "Acquisition, retention, revenue and operations ownership" }
+  };
+
+  var WORK = [
+    {
+      slug: "chat360",
+      org: "Chat360",
+      role: "Associate Product Manager",
+      context: "Voice and GenAI enterprise solutions",
+      when: "Jan 2025 — Jun 2025",
+      where: "Pune",
+      title: "Taking an enterprise Voice AI platform from zero to one",
+      line: "Owned the 0-to-1 Voice AI launch — architecture through to the analytics customers run their contact centres on.",
+      overview: "Chat360 builds conversational AI infrastructure for enterprise customer engagement. I owned the Voice AI platform end to end: the real-time pipeline, the flow builder enterprises use to design their own conversations, how AI usage gets billed, and the analytics that tell a customer whether any of it is working.",
+      myRole: "Owned Voice AI, Bot Builder, GenAI billing, omnichannel expansion, enterprise RBAC and product analytics.",
+      team: "8–10 member cross-functional team across engineering, design and QA.",
+      problem: "Enterprises running high-volume calling needed a Voice AI layer that sits on top of their existing telephony and dialer stack without breaking latency, tone or turn-taking — the things that make a phone call feel human instead of robotic.",
+      why: "Voice is the highest-trust, highest-friction channel in enterprise support and sales. Laggy responses, talking over the customer or robotic speech cost conversions directly, so the platform's credibility rested on this launch.",
+      users: "Enterprise contact-centre teams, their agents, and the customers on the other end of the call.",
+      metrics: [
+        { v: "50%", k: "Voice latency reduction" },
+        { v: "5", k: "Channels live" },
+        { v: "8–10", k: "People coordinated" }
+      ],
+      caps: ["ai-product", "technical-product", "ux", "analytics", "product-strategy"],
+      inits: [
+        {
+          name: "Voice AI pipeline",
+          sum: "Telephony, dialers, speech-to-text, the model, speech synthesis, voice-activity detection and noise suppression, working together in real time.",
+          tags: ["Real-time", "Architecture", "Vendor selection"],
+          detail: [
+            "The architecture spans telephony, dialers, STT, LLM, TTS, VAD and noise suppression. Every stage adds delay, so it had to be reasoned about as a latency budget rather than a single model call.",
+            "Dialer integrations covered Ozonetel, Tubelight, SIP and NEOX Dialer — each with different call control and webhook behaviour that flows had to account for.",
+            "Voice experience decisions centred on latency, turn-taking, handling interruptions gracefully, and letting customers preview a synthesized voice before committing to it.",
+            "Model management spanned GPT-4o and Azure GPT-4.1 Mini, trading response quality against cost and latency per use case.",
+            "Vendor ecosystem included Murf AI and Narration BOX for speech synthesis, with Uniphore and Kore.ai as adjacent conversational AI capability."
+          ]
+        },
+        {
+          name: "Cutting latency in half",
+          sum: "Found the real bottleneck in the pipeline instead of swapping vendors, and took end-to-end response time down by 50%.",
+          tags: ["Root cause", "Measurement"],
+          detail: [
+            "The symptom: callers noticed the pause before the AI replied. End-to-end response was too slow for the rhythm of a real phone conversation.",
+            "Root cause analysis traced delay across the whole STT → LLM → TTS chain rather than assuming a single vendor was at fault.",
+            "The fix combined AI workflow tuning with noise suppression, which stopped wasted processing on noisy audio before it ever reached the model.",
+            "Result: a 50% reduction in end-to-end voice latency, which is what made conversations feel natural."
+          ]
+        },
+        {
+          name: "Bot Builder",
+          sum: "A visual flow builder enterprises use to design their own conversations without writing code.",
+          tags: ["Product design", "APIs", "Enterprise SaaS"],
+          detail: [
+            "Component library covering name, email, phone, OTP and date capture, webhook calls, conditional branching, GenAI nodes and informational messages.",
+            "Variables and branching let a flow adapt to whatever the customer said or entered.",
+            "Any node could call out over API or webhook, connecting flows to the customer's own backend systems.",
+            "The design problem was making a technically dense flow graph usable by people who are not engineers."
+          ]
+        },
+        {
+          name: "GenAI billing",
+          sum: "Usage-based billing for every AI-consuming feature on the platform.",
+          tags: ["Business model", "Edge cases"],
+          detail: [
+            "Modelled usage economics around a wallet, supporting both query-based and per-call billing.",
+            "Designed deduction, refund and retry handling so a customer is never charged for an AI call that failed."
+          ]
+        },
+        {
+          name: "Omnichannel expansion",
+          sum: "Grew the platform from voice-only to five channels: voice, WhatsApp, SMS, email and RCS.",
+          tags: ["Strategy", "Adoption"],
+          detail: [
+            "Each channel needed its own delivery and fallback logic while sharing the same underlying flows and analytics.",
+            "This is what unlocked broader enterprise adoption — customers could meet their users wherever conversion actually happened."
+          ]
+        },
+        {
+          name: "Campaign management",
+          sum: "Tooling for enterprises running outbound campaigns at scale.",
+          tags: ["Product design"],
+          detail: ["Campaign creation, contact management, agent mapping, scheduling, retry logic and callback logic."]
+        },
+        {
+          name: "Enterprise access control",
+          sum: "Role-based access control built for large enterprise teams.",
+          tags: ["Enterprise SaaS"],
+          detail: ["Role management, granular permissions, dynamic RBAC, and a super-admin tier for platform-level control."]
+        },
+        {
+          name: "Product analytics",
+          sum: "Custom dashboards so customers can answer “is this working?” without asking their account manager.",
+          tags: ["Analytics"],
+          detail: [
+            "Covered call, funnel, flow and keyword analytics, sentiment, lead journey, average handling time, call score, cost per call and time-based trends.",
+            "Designed for self-service: the person running a campaign should be able to diagnose it themselves."
+          ]
+        },
+        {
+          name: "UX strategy",
+          sum: "Directed research, wireframes and prototypes across the platform.",
+          tags: ["UX", "Research"],
+          detail: ["Delivered wireframes and prototypes through Figma, Lovable and Claude AI, iterating quickly alongside engineering."]
+        },
+        {
+          name: "Roadmap and strategy",
+          sum: "Defined the one-year product roadmap.",
+          tags: ["Strategy"],
+          detail: ["Balanced prioritization, MVP scoping, API integrations and cross-functional execution against business impact."]
+        }
+      ],
+      challenges: [
+        "Coordinating 8–10 people across a platform with many moving technical parts — dialers, models, billing, access control — all landing at once.",
+        "Diagnosing latency that could have originated in any one of five pipeline stages, where the obvious suspect was usually wrong."
+      ],
+      learnings: [
+        "In voice products, perceived quality is a systems problem. No single vendor swap fixes latency; the whole pipeline has to be instrumented before you can fix anything.",
+        "Billing and access control are not back-office concerns for an AI product. They decide which use cases a customer trusts enough to scale."
+      ],
+      related: ["cordelia-cruises", "thinking"]
+    },
+    {
+      slug: "cordelia-cruises",
+      org: "Cordelia Cruises",
+      role: "Product Analyst",
+      context: "AI initiatives and platform revamps",
+      when: "Nov 2023 — Jan 2025",
+      where: "Mumbai",
+      title: "A first mobile app, a content backbone, and AI on the support line",
+      line: "0-to-1 mobile app, a centralized CMS, and Voice AI plus automated QA across customer touchpoints.",
+      overview: "Cordelia needed a modern digital layer: an app customers could book and travel with, a way to manage content across every channel without duplicating work, and AI to take load off support. I worked across all three from discovery through launch.",
+      myRole: "Led the 0-to-1 mobile app build; owned the CMS, Voice AI and automated QA initiatives.",
+      team: "Worked directly with engineering and design to ship the application.",
+      problem: "Customers had no dedicated mobile experience for a high-consideration purchase, content across digital channels was managed inconsistently, and support queries were eating disproportionate operational time.",
+      why: "A cruise booking spans months and many touchpoints. Customers need something reliable before and during the trip, and the business needed to serve that without scaling support headcount linearly.",
+      users: "Cruise customers booking, managing and travelling, plus the internal content and support teams behind them.",
+      metrics: [
+        { v: "20%", k: "Fewer support queries" },
+        { v: "15%", k: "Lower operational cost" },
+        { v: "20%", k: "Faster QA turnaround" }
+      ],
+      caps: ["technical-product", "ux", "ai-product", "business-growth"],
+      inits: [
+        {
+          name: "Mobile application",
+          sum: "Led 0-to-1 development of the company's first customer-facing app.",
+          tags: ["0→1", "UX"],
+          detail: [
+            "Discovery mapped the end-to-end journey from booking through the onboard experience.",
+            "Translated those insights into user flows and product requirements alongside engineering and design.",
+            "Shipped as a genuine 0-to-1 launch — nothing like it existed before."
+          ]
+        },
+        {
+          name: "Centralized CMS",
+          sum: "One place to manage content across every digital channel.",
+          tags: ["Platform", "Operations"],
+          detail: [
+            "Content for the app, web and marketing channels was previously managed separately, producing inconsistency and duplicated work.",
+            "Designed a workflow letting the content team publish once and distribute everywhere.",
+            "Cut the operational overhead of maintaining multi-channel content."
+          ]
+        },
+        {
+          name: "Voice AI on support",
+          sum: "Automated the routine half of customer contact, removing 20% of support queries.",
+          tags: ["AI", "Business impact"],
+          detail: [
+            "Automated the common interactions that previously required a human agent.",
+            "Cut operational costs by 15% by shifting routine contact to Voice AI."
+          ]
+        },
+        {
+          name: "AI-powered auto QA",
+          sum: "Replaced a manual review bottleneck, improving turnaround by 20%.",
+          tags: ["AI", "Process"],
+          detail: [
+            "The existing QA process relied on manual review, which became the constraint as volume grew.",
+            "Automated the workflow with AI, cutting turnaround 20% without giving up quality."
+          ]
+        }
+      ],
+      challenges: [
+        "Shipping a first-ever mobile app while simultaneously standing up the CMS that app depended on for content.",
+        "Introducing Voice AI into a live support workflow without degrading customer experience mid-transition."
+      ],
+      learnings: [
+        "0-to-1 products are decided by the discovery work done before anyone designs a screen.",
+        "Automation lands best when scoped first to the highest-volume, lowest-judgment interactions."
+      ],
+      related: ["chat360", "nosh-house"]
+    },
+    {
+      slug: "nosh-house",
+      org: "Nosh House Cafe",
+      role: "Founder",
+      context: "Family business",
+      when: "May 2025 — present",
+      where: "Mumbai",
+      title: "Owning the whole P&L, not just the product layer",
+      line: "Took a family cafe to 50% MRR growth and operational break-even in nine months.",
+      overview: "Running the cafe as founder meant owning every layer — acquisition, digital ordering, operations and retention — not just the product. It is the clearest evidence of end-to-end business ownership in my background.",
+      myRole: "Founder. Strategy, growth, operations and the digital product, end to end.",
+      team: "On-ground operations staff plus external platforms (Reelo, Petpooja) rather than a product team.",
+      problem: "The business had to become self-sustaining: acquire customers efficiently, convert them through a fast ordering flow, and retain them without leaning on discounts.",
+      why: "As founder every metric — order value, margin, service speed, capital efficiency — is a personal outcome rather than a dashboard someone else owns. It is the highest-accountability work I have done.",
+      users: "Walk-in and delivery customers, and repeat customers reached through loyalty and WhatsApp campaigns.",
+      metrics: [
+        { v: "50%", k: "MRR growth" },
+        { v: "9 mo", k: "To break-even" }
+      ],
+      caps: ["business-growth", "product-strategy", "technical-product"],
+      inits: [
+        {
+          name: "Getting to break-even",
+          sum: "Operational break-even within nine months of taking over.",
+          tags: ["Business impact"],
+          detail: ["Customer acquisition cost, average order value, margin, service speed and capital efficiency all had to move together — improving one at the expense of another would not have got there."]
+        },
+        {
+          name: "Digital ordering",
+          sum: "QR ordering, cart and payments, wired into the point of sale.",
+          tags: ["Digital product"],
+          detail: [
+            "Redesigned the customer journey across discovery, visit, menu, order, payment, fulfilment and retention.",
+            "Integrated Petpooja for point-of-sale and order management behind the customer-facing flow."
+          ]
+        },
+        {
+          name: "Growth loop",
+          sum: "Reelo automating WhatsApp campaigns, paired with loyalty.",
+          tags: ["Growth", "Automation"],
+          detail: [
+            "Combined WhatsApp automation with loyalty programmes to lift retention.",
+            "Treated acquisition, campaigns, loyalty and retention as one connected loop rather than a series of one-off promotions."
+          ]
+        },
+        {
+          name: "Operations",
+          sum: "Delivery operations and SOPs rewritten to increase revenue, not just cut cost.",
+          tags: ["Operations"],
+          detail: [
+            "Redesigned delivery and service SOPs specifically to raise revenue per order.",
+            "This process work is what the MRR growth and break-even results actually rest on."
+          ]
+        }
+      ],
+      challenges: [
+        "Balancing short-term cash flow against investments like Reelo and Petpooja that only pay back over months.",
+        "Improving service speed and margin at the same time — two things that normally trade off."
+      ],
+      learnings: [
+        "Owning a P&L changes how you prioritize. Every roadmap call gets weighed against cash flow, not just user value.",
+        "Automation only compounds retention when there is an operational reason for customers to come back."
+      ],
+      related: ["chat360", "cordelia-cruises"]
+    },
+    {
+      slug: "yapita-health",
+      org: "Yapita Health",
+      role: "UI/UX Designer",
+      context: "Internship",
+      when: "Jun 2023 — Aug 2023",
+      where: "Gurugram",
+      title: "An AI healthcare chatbot, from concept to working product",
+      line: "Where the UX foundation came from: research, journeys and prototypes on a healthcare AI product.",
+      overview: "My UX foundation — taking an AI healthcare chatbot from a rough concept through research, journey mapping and prototypes to something real and tested.",
+      myRole: "Research, journey mapping, wireframes and prototypes.",
+      team: "Internship inside Yapita Health's product team.",
+      problem: "Patients needed an approachable way to use an AI healthcare chatbot, and early concepts had never been validated with real users.",
+      why: "Healthcare interfaces carry higher trust and clarity requirements than most products. Getting onboarding or comprehension wrong has real consequences.",
+      users: "Patients meeting an AI healthcare chatbot for the first time.",
+      metrics: [
+        { v: "↑", k: "Engagement and inbound leads" }
+      ],
+      caps: ["ux", "ai-product"],
+      inits: [
+        {
+          name: "Chatbot experience",
+          sum: "Designed the product from concept through to something working.",
+          tags: ["UX design"],
+          detail: ["Built user journeys, wireframes and prototypes aimed at onboarding and overall experience."]
+        },
+        {
+          name: "Research and usability",
+          sum: "Ran research and usability analysis to find where the experience broke.",
+          tags: ["Research"],
+          detail: ["Findings fed directly into iteration on onboarding and the chatbot's interaction patterns."]
+        },
+        {
+          name: "Landing page",
+          sum: "Optimized landing pages from customer feedback and interaction analytics.",
+          tags: ["Growth"],
+          detail: ["Increased engagement and inbound leads as a direct result."]
+        }
+      ],
+      challenges: ["Designing trust and clarity into an AI healthcare product for users with no existing mental model for it."],
+      learnings: ["Usability testing on a rough concept surfaces onboarding problems that cost far less to fix before build than after."],
+      related: ["chat360", "thinking"]
+    },
+    {
+      slug: "events-fusion",
+      org: "Events Fusion",
+      role: "UI/UX Designer",
+      context: "Project",
+      when: "Sep 2025 — Mar 2026",
+      where: "Remote",
+      title: "Pitch decks that survive an executive room",
+      line: "Executive-ready B2B decks and the sales operations around them.",
+      overview: "A design and operations project: building pitch decks that hold up in front of enterprise stakeholders, then tightening the process around them.",
+      myRole: "Deck design and sales operations improvements.",
+      team: "Worked directly with sales stakeholders across industries.",
+      problem: "Generic decks were slowing enterprise deal cycles and weakening client engagement.",
+      why: "In enterprise sales the deck is often the first artifact a stakeholder judges you by. Its clarity and structure affect deal velocity directly.",
+      users: "Enterprise stakeholders evaluating a pitch, and the sales team presenting it.",
+      metrics: [
+        { v: "↑", k: "Client engagement" },
+        { v: "↓", k: "Time to close" }
+      ],
+      caps: ["ux", "business-growth"],
+      inits: [
+        {
+          name: "B2B pitch decks",
+          sum: "Executive-ready decks tailored per industry.",
+          tags: ["Storytelling"],
+          detail: ["Applied information architecture to structure decks around how executives actually skim and decide."]
+        },
+        {
+          name: "Sales operations",
+          sum: "Streamlined how a delivered deck turns into a follow-up.",
+          tags: ["Operations"],
+          detail: ["Tightened stakeholder communication to accelerate enterprise deal closures."]
+        }
+      ],
+      challenges: ["Carrying one core narrative credibly across industries with very different buying criteria."],
+      learnings: ["Deck structure is a UX problem. The same hierarchy and clarity principles apply as in product design."],
+      related: ["chat360", "yapita-health"]
+    }
+  ];
+
+  var JOURNEY = [
+    {
+      title: "Leadership and business",
+      when: "2018 — 2020",
+      entries: [
+        { org: "College Fest", role: "Sponsorship Head", meta: "Jan 2018 — Mar 2018 / Pune", points: [
+          "Secured 7–8 sponsors and onboarded 20 stalls for the university's first engineering fest",
+          "Stakeholder management and end-to-end event execution"
+        ]},
+        { org: "AIESEC", role: "Business Development Manager", meta: "Mar 2020 — Aug 2020 / Pune", points: [
+          "Ranked #2 in Pune driving digital customer acquisition through data-driven outreach during COVID-19",
+          "Built corporate partnerships, gathering requirements and running cross-functional execution"
+        ]}
+      ]
+    },
+    {
+      title: "UX and design foundation",
+      when: "2023",
+      link: "#/work/yapita-health",
+      entries: [
+        { org: "Yapita Health", role: "UI/UX Designer", meta: "Jun 2023 — Aug 2023 / Gurugram", points: [
+          "Designed an AI healthcare chatbot from concept to working product",
+          "Built user journeys, wireframes and prototypes to improve onboarding"
+        ]}
+      ]
+    },
+    {
+      title: "Product foundation",
+      when: "2023 — 2025",
+      link: "#/work/cordelia-cruises",
+      entries: [
+        { org: "Cordelia Cruises", role: "Product Analyst", meta: "Nov 2023 — Jan 2025 / Mumbai", points: [
+          "Led 0-to-1 development of a customer-facing mobile application",
+          "Built a centralized CMS and delivered Voice AI plus automated QA"
+        ]}
+      ]
+    },
+    {
+      title: "AI product management",
+      when: "2025",
+      link: "#/work/chat360",
+      entries: [
+        { org: "Chat360", role: "Associate Product Manager", meta: "Jan 2025 — Jun 2025 / Pune", points: [
+          "Led the 0-to-1 launch of an enterprise Voice AI platform with an 8–10 member team",
+          "Cut voice latency 50% and scaled omnichannel support to five channels"
+        ]}
+      ]
+    },
+    {
+      title: "Business ownership",
+      when: "2025 — present",
+      link: "#/work/nosh-house",
+      entries: [
+        { org: "Nosh House Cafe", role: "Founder", meta: "May 2025 — present / Mumbai", points: [
+          "Operational break-even in nine months, MRR up 50%",
+          "Automated WhatsApp marketing through Reelo and rebuilt delivery operations"
+        ]}
+      ]
+    },
+    {
+      title: "Where this is going",
+      when: "2026 — present",
+      entries: [
+        { org: "Masters' Union", role: "Post Graduate Programme, Technology and Business Management", meta: "2026 — present / Gurugram", points: [
+          "Building toward agentic AI product management"
+        ]}
+      ]
+    }
+  ];
+
+  var EXPERIMENTS = [
+    {
+      title: "Travel discovery platform",
+      status: "prototype",
+      problem: "Travel research is scattered across Instagram, Reddit and Google Reviews, so planning a trip means manually reconciling sources that disagree.",
+      approach: "Pulled signal from all three into a single personalization layer, combining location intelligence with a recommendation engine to attack the data-fragmentation problem directly.",
+      parts: ["Instagram", "Reddit", "Google Reviews", "Location intelligence", "Recommendation engine"]
+    },
+    {
+      title: "Courier AI",
+      status: "concept",
+      problem: "Estimating package dimensions and weight by hand is slow and error-prone for courier and logistics work.",
+      approach: "Took an image as the only input and used computer vision to estimate dimensions and weight, feeding a shipping recommendation.",
+      parts: ["Image input", "Computer vision", "Dimension estimation", "Weight estimation", "Shipping recommendation"]
+    },
+    {
+      title: "Workforce intelligence",
+      status: "prototype",
+      problem: "Knowing what a team can actually cover against what the business needs is hard when employee data is spread across disconnected tools.",
+      approach: "Built a capability matrix and intelligence log against business requirements, orchestrating ClickUp, Google Sheets, Gemini and Make.com to keep a live view of capability health.",
+      parts: ["ClickUp", "Google Sheets", "Gemini", "Make.com", "Capability matrix"]
+    }
+  ];
+
+  var PROCESS = [
+    { n: "01", name: "Discover", d: "User research, customer insights, market research, problem discovery" },
+    { n: "02", name: "Define", d: "Problem statement, personas, jobs-to-be-done, success criteria" },
+    { n: "03", name: "Prioritize", d: "Impact, effort, business value, strategic alignment" },
+    { n: "04", name: "Design", d: "Customer journey, user flows, wireframes, prototypes" },
+    { n: "05", name: "Build", d: "Requirements, user stories, acceptance criteria, APIs, integrations, QA" },
+    { n: "06", name: "Launch", d: "MVP, go-to-market, adoption, monitoring" },
+    { n: "07", name: "Measure", d: "KPIs, funnel, retention, revenue, business impact" }
+  ];
+
+  var EDUCATION = [
+    { t: "Masters' Union", s: "Post Graduate Programme in Technology and Business Management", m: "2026 — present / Gurugram" },
+    { t: "MIT Art, Design and Technology University", s: "B.Tech, Computer Science", m: "2017 — 2022 / Pune" },
+    { t: "Sri Chaitanya", s: "Telangana State Board, Class 12", m: "2015 — 2017 / Hyderabad" }
+  ];
+
+  var CERTS = [
+    { t: "Product Management with Generative and Agentic AI", s: "BITS Pilani", m: "May 2026" },
+    { t: "Design for the 21st Century with Don Norman", s: "Interaction Design Foundation", m: "May 2023" },
+    { t: "UI UX Design Mastery", s: "Designerss Academy", m: "Apr 2023" },
+    { t: "User Experience: The Beginner's Guide", s: "Interaction Design Foundation", m: "Nov 2022" }
+  ];
+
+  var SKILLS_BIZ = ["Competitive analysis", "Market research", "KPI tracking", "Funnel analysis", "Root cause analysis", "Customer acquisition", "Revenue growth", "Cross-functional execution", "Process optimization", "SOP design", "Stakeholder management", "Product strategy", "Prioritization", "Roadmapping", "User journey"];
+  var SKILLS_TECH = ["Figma", "JIRA", "Confluence", "Google Analytics", "Vibe coding", "Agentic AI", "Generative AI", "Voice AI", "AI workflow", "Prompt engineering", "Automation", "AI product development"];
+
+  var BEYOND = [
+    "Completed a four-day, 14,000-ft Himalayan trek carrying 20–25 kg",
+    "Certified in UCMAS Abacus (Level 4) with International Grade 10 Distinction",
+    "Took 1st in tug of war and 3rd in the 400m on the same day"
+  ];
+
+  /* =========================================================
+     ROUTES
+     ========================================================= */
+
+  var NAV = [
+    { path: "#/work", label: "Work" },
+    { path: "#/journey", label: "Journey" },
+    { path: "#/lab", label: "Lab" },
+    { path: "#/thinking", label: "Thinking" },
+    { path: "#/about", label: "About" },
+    { path: "#/contact", label: "Contact" }
+  ];
+
+  var COMMANDS = [
+    { path: "#/", label: "Overview" },
+    { path: "#/work", label: "Work" },
+    { path: "#/work/chat360", label: "Chat360 — enterprise Voice AI" },
+    { path: "#/work/cordelia-cruises", label: "Cordelia Cruises — app, CMS, Voice AI" },
+    { path: "#/work/nosh-house", label: "Nosh House Cafe — founder" },
+    { path: "#/work/yapita-health", label: "Yapita Health — healthcare chatbot" },
+    { path: "#/work/events-fusion", label: "Events Fusion — B2B decks" },
+    { path: "#/journey", label: "Journey" },
+    { path: "#/lab", label: "Lab — AI experiments" },
+    { path: "#/thinking", label: "Thinking — how I work" },
+    { path: "#/about", label: "About" },
+    { path: "#/contact", label: "Contact" }
+  ];
+
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function el(id) { return document.getElementById(id); }
+  function byWork(slug) {
+    for (var i = 0; i < WORK.length; i++) if (WORK[i].slug === slug) return WORK[i];
+    return null;
+  }
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function secHead(idx, title, desc) {
+    return '<div class="sec-head">' +
+      '<div class="idx">' + esc(idx) + '</div>' +
+      '<div class="txt"><h2>' + esc(title) + '</h2>' +
+      (desc ? '<p>' + esc(desc) + '</p>' : '') +
+      '</div></div>';
+  }
+
+  /* =========================================================
+     LATENCY LAB — the interactive centrepiece
+     ========================================================= */
+
+  // Illustrative stage split. Only the 50% end-to-end reduction is a shipped result.
+  var STAGES = [
+    { id: "net", name: "Telephony", base: 8 },
+    { id: "vad", name: "VAD + gate", base: 6 },
+    { id: "stt", name: "Speech to text", base: 30 },
+    { id: "llm", name: "Model", base: 34 },
+    { id: "tts", name: "Speech synthesis", base: 18 },
+    { id: "out", name: "Playback", base: 4 }
+  ];
+
+  var OPTS = [
+    { id: "noise", name: "Noise suppression", delta: 7, hits: { vad: 3, stt: 4 }, why: "stops wasted processing on noisy audio" },
+    { id: "stream_stt", name: "Streaming transcripts", delta: 13, hits: { stt: 13 }, why: "partial results instead of waiting for the full utterance" },
+    { id: "mini", name: "Azure GPT-4.1 Mini", delta: 17, hits: { llm: 17 }, why: "smaller model where the use case allows it" },
+    { id: "stream_tts", name: "Streaming synthesis", delta: 13, hits: { tts: 13 }, why: "start speaking before the sentence is finished" }
+  ];
+
+  var labState = { noise: false, stream_stt: false, mini: false, stream_tts: false, running: true };
+
+  function labTotals() {
+    var vals = {};
+    var total = 0;
+    STAGES.forEach(function (s) { vals[s.id] = s.base; });
+    OPTS.forEach(function (o) {
+      if (!labState[o.id]) return;
+      Object.keys(o.hits).forEach(function (k) { vals[k] -= o.hits[k]; });
+    });
+    STAGES.forEach(function (s) { total += vals[s.id]; });
+    return { vals: vals, total: total };
+  }
+
+  function labMarkup() {
+    var segs = STAGES.map(function (s) {
+      return '<div class="seg s-' + s.id + '" data-seg="' + s.id + '" style="flex-grow:' + s.base + '">' +
+        '<span>' + esc(s.name) + '</span></div>';
+    }).join("");
+
+    var toggles = OPTS.map(function (o) {
+      return '<button class="tg" type="button" data-opt="' + o.id + '" aria-pressed="false">' +
+        '<span class="led" aria-hidden="true"></span>' +
+        '<span><span class="tg-name">' + esc(o.name) + '</span>' +
+        '<span class="tg-delta">−' + o.delta + ' units / ' + esc(o.why) + '</span></span>' +
+        '</button>';
+    }).join("");
+
+    return '<div class="panel lab" id="lab">' +
+      '<div class="panel-bar">' +
+        '<div class="panel-title">Latency lab</div>' +
+        '<div class="panel-note">Illustrative model. The stage split is a demonstration —<br>the 50% end-to-end reduction is the shipped result.</div>' +
+      '</div>' +
+      '<div class="budget" id="budget" role="img" aria-label="Voice pipeline latency budget by stage">' + segs + '</div>' +
+      '<div class="track"><div class="packet" id="packet"></div></div>' +
+      '<div class="lab-readout">' +
+        '<div>' +
+          '<div class="readout-big num" id="labTotal">100<span class="unit">units</span></div>' +
+          '<div class="readout-label" id="labLabel">Baseline round trip, before any optimization.</div>' +
+        '</div>' +
+        '<div class="verdict" id="labVerdict">Turn on the four optimizations to see where the 50% came from.</div>' +
+      '</div>' +
+      '<div class="toggles">' + toggles + '</div>' +
+      '<div class="lab-controls">' +
+        '<button class="btn-ghost" type="button" id="labAll">enable all</button>' +
+        '<button class="btn-ghost" type="button" id="labReset">reset to baseline</button>' +
+        '<button class="btn-ghost" type="button" id="labPause">' + (reduceMotion ? "signal off" : "pause signal") + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function labUpdate() {
+    var t = labTotals();
+    var budget = el("budget");
+    if (!budget) return;
+
+    STAGES.forEach(function (s) {
+      var node = budget.querySelector('[data-seg="' + s.id + '"]');
+      if (node) node.style.flexGrow = Math.max(t.vals[s.id], 0.6);
+    });
+
+    var pct = Math.round(100 - t.total);
+    el("labTotal").innerHTML = t.total + '<span class="unit">units</span>';
+
+    var label = el("labLabel");
+    var verdict = el("labVerdict");
+    var allOn = OPTS.every(function (o) { return labState[o.id]; });
+
+    if (pct === 0) {
+      label.textContent = "Baseline round trip, before any optimization.";
+      verdict.textContent = "Turn on the four optimizations to see where the 50% came from.";
+      verdict.classList.remove("hit");
+    } else if (allOn) {
+      label.textContent = "Every optimization on. This is the shipped configuration.";
+      verdict.textContent = "−50% end-to-end. Matches the result shipped on the Chat360 Voice AI platform.";
+      verdict.classList.add("hit");
+    } else {
+      label.textContent = "Round trip with " + OPTS.filter(function (o) { return labState[o.id]; }).length + " of 4 optimizations enabled.";
+      verdict.textContent = "−" + pct + "% so far. The remaining wins are in the stages still at full width.";
+      verdict.classList.remove("hit");
+    }
+
+    var packet = el("packet");
+    if (packet) packet.style.setProperty("--dur", (t.total / 100 * 3 + 0.5).toFixed(2) + "s");
+  }
+
+  function labBind() {
+    var lab = el("lab");
+    if (!lab) return;
+
+    lab.querySelectorAll("[data-opt]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-opt");
+        labState[id] = !labState[id];
+        btn.setAttribute("aria-pressed", labState[id] ? "true" : "false");
+        labUpdate();
+      });
+    });
+
+    el("labAll").addEventListener("click", function () {
+      OPTS.forEach(function (o) { labState[o.id] = true; });
+      lab.querySelectorAll("[data-opt]").forEach(function (b) { b.setAttribute("aria-pressed", "true"); });
+      labUpdate();
+    });
+
+    el("labReset").addEventListener("click", function () {
+      OPTS.forEach(function (o) { labState[o.id] = false; });
+      lab.querySelectorAll("[data-opt]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+      labUpdate();
+    });
+
+    var pauseBtn = el("labPause");
+    pauseBtn.addEventListener("click", function () {
+      labState.running = !labState.running;
+      lab.classList.toggle("paused", !labState.running);
+      pauseBtn.textContent = labState.running ? "pause signal" : "resume signal";
+    });
+
+    if (reduceMotion) lab.classList.add("paused");
+    labUpdate();
+  }
+
+  /* =========================================================
+     SYSTEM MAP — canvas knowledge graph
+     ========================================================= */
+
+  // Two tidy columns: what I built on the left, what it exercised on the right.
+  // Deterministic positions, so nothing ever overlaps.
+  var CAP_ORDER = ["ai-product", "product-strategy", "technical-product", "ux", "analytics", "business-growth"];
+
+  function buildMap() {
+    var projX = 22, projW = 232, projH = 50, projGap = 20;
+    var capX = 626, capW = 232, capH = 40, capGap = 16;
+    var top = 44;
+
+    var projects = WORK.map(function (w, i) {
+      return { slug: w.slug, name: w.org, sub: w.role, caps: w.caps, y: top + i * (projH + projGap) };
+    });
+    var caps = CAP_ORDER.map(function (id, i) {
+      return { id: id, name: CAPS[id].label, y: top + 6 + i * (capH + capGap) };
+    });
+
+    var height = Math.max(
+      top + projects.length * (projH + projGap),
+      top + 6 + caps.length * (capH + capGap)
+    ) + 14;
+
+    var links = "";
+    projects.forEach(function (p) {
+      var y1 = p.y + projH / 2;
+      p.caps.forEach(function (cid) {
+        var c = caps.filter(function (x) { return x.id === cid; })[0];
+        if (!c) return;
+        var y2 = c.y + capH / 2;
+        var x1 = projX + projW, x2 = capX;
+        links += '<path class="lnk" data-p="' + p.slug + '" data-c="' + cid + '" d="M' + x1 + ' ' + y1 +
+          ' C ' + (x1 + 150) + ' ' + y1 + ', ' + (x2 - 150) + ' ' + y2 + ', ' + x2 + ' ' + y2 + '"></path>';
+      });
+    });
+
+    var projNodes = projects.map(function (p) {
+      return '<a class="proj" data-p="' + p.slug + '" href="#/work/' + p.slug + '" tabindex="0">' +
+        '<rect class="node-box" x="' + projX + '" y="' + p.y + '" width="' + projW + '" height="' + projH + '" rx="3"></rect>' +
+        '<text class="node-name" x="' + (projX + 16) + '" y="' + (p.y + 22) + '">' + esc(p.name) + '</text>' +
+        '<text class="node-sub" x="' + (projX + 16) + '" y="' + (p.y + 38) + '">' + esc(p.sub) + '</text>' +
+      '</a>';
+    }).join("");
+
+    var capNodes = caps.map(function (c) {
+      return '<g class="cap" data-c="' + c.id + '">' +
+        '<rect class="cap-box" x="' + capX + '" y="' + c.y + '" width="' + capW + '" height="' + capH + '" rx="3"></rect>' +
+        '<text class="cap-name" x="' + (capX + 16) + '" y="' + (c.y + 25) + '">' + esc(c.name) + '</text>' +
+      '</g>';
+    }).join("");
+
+    return '<div class="mapx-shell">' +
+      '<div class="mapx-scroll">' +
+        '<svg class="mapx" id="mapx" viewBox="0 0 880 ' + height + '" preserveAspectRatio="xMidYMin meet" ' +
+          'role="group" aria-label="Which capability each project exercised">' +
+          '<text class="col-head" x="' + projX + '" y="26">WHAT I BUILT</text>' +
+          '<text class="col-head" x="' + capX + '" y="26">WHAT IT EXERCISED</text>' +
+          '<g>' + links + '</g>' + capNodes + projNodes +
+        '</svg>' +
+      '</div>' +
+      '<div class="mapx-foot">' +
+        '<span>hover a project to isolate its links <b>·</b> click to open the case study</span>' +
+        '<span id="mapxState">16 connections across 5 projects</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function bindMap() {
+    var svg = el("mapx");
+    if (!svg) return;
+    var links = svg.querySelectorAll(".lnk");
+    var caps = svg.querySelectorAll(".cap");
+    var state = el("mapxState");
+    var baseText = state ? state.textContent : "";
+
+    function activate(slug) {
+      svg.classList.add("isolating");
+      var count = 0;
+      links.forEach(function (l) {
+        var on = l.getAttribute("data-p") === slug;
+        l.classList.toggle("on", on);
+        if (on) count++;
+      });
+      var lit = {};
+      links.forEach(function (l) {
+        if (l.getAttribute("data-p") === slug) lit[l.getAttribute("data-c")] = true;
+      });
+      caps.forEach(function (c) { c.classList.toggle("on", !!lit[c.getAttribute("data-c")]); });
+      var w = byWork(slug);
+      if (state && w) state.textContent = w.org + " — " + count + " capabilities";
+    }
+
+    function clear() {
+      svg.classList.remove("isolating");
+      links.forEach(function (l) { l.classList.remove("on"); });
+      caps.forEach(function (c) { c.classList.remove("on"); });
+      if (state) state.textContent = baseText;
+    }
+
+    svg.querySelectorAll(".proj").forEach(function (p) {
+      var slug = p.getAttribute("data-p");
+      p.addEventListener("mouseenter", function () { activate(slug); });
+      p.addEventListener("mouseleave", clear);
+      p.addEventListener("focus", function () { activate(slug); });
+      p.addEventListener("blur", clear);
+    });
+  }
+
+  /* =========================================================
+     VIEWS
+     ========================================================= */
+
+  function viewHome() {
+    var impact = IMPACT.map(function (m) {
+      return '<div class="ro"><div class="v num">' + esc(m.v) + '</div>' +
+        '<div class="k">' + esc(m.k) + '</div>' +
+        '<div class="d">' + esc(m.d) + '</div></div>';
+    }).join("");
+
+    var trace = TRACE.map(function (t, i) {
+      return '<div class="trace-row">' +
+        '<div class="trace-n">' + String(i + 1).padStart(2, "0") + '</div>' +
+        '<div><div class="trace-stage">' + esc(t.stage) + '</div>' +
+        '<div class="trace-role">' + esc(t.role) + '</div>' +
+        '<div class="trace-when">' + esc(t.when) + '</div></div>' +
+      '</div>';
+    }).join("");
+
+    var caps = Object.keys(CAPS).map(function (k) {
+      return '<div class="cap"><h3>' + esc(CAPS[k].label) + '</h3><p>' + esc(CAPS[k].d) + '</p></div>';
+    }).join("");
+
+    return '' +
+      '<section class="hero">' +
+        '<div class="console-line" id="consoleLine"></div>' +
+        '<h1>I build voice AI that answers before you notice the pause.</h1>' +
+        '<p class="lede">Two years shipping 0-to-1 AI products — and a P&amp;L of my own.</p>' +
+        labMarkup() +
+      '</section>' +
+
+      '<section>' +
+        secHead("results", "What the work actually moved", "Every figure below comes from a shipped project, not an estimate.") +
+        '<div class="readouts">' + impact + '</div>' +
+      '</section>' +
+
+      '<section>' +
+        secHead("map", "The work, as a system", "Five projects on the left, the capabilities each one actually exercised on the right.") +
+        buildMap() +
+      '</section>' +
+
+      '<section>' +
+        secHead("path", "How the skills stacked up", "Each stage built the thing the next one needed.") +
+        '<div class="trace">' + trace + '</div>' +
+      '</section>' +
+
+      '<section>' +
+        secHead("capability", "What I bring to a team") +
+        '<div class="matrix">' + caps + '</div>' +
+      '</section>' +
+
+      '<section>' +
+        secHead("contact", "Open to AI and product roles") +
+        contactGrid() +
+      '</section>';
+  }
+
+  function viewWork() {
+    var items = WORK.map(function (w) {
+      return '<a class="work-item" href="#/work/' + w.slug + '">' +
+        '<div><div class="work-org">' + esc(w.org) + '</div>' +
+        '<div class="work-line">' + esc(w.line) + '</div></div>' +
+        '<div class="work-when">' + esc(w.role) + '<br>' + esc(w.when) + '</div>' +
+      '</a>';
+    }).join("");
+
+    return '<section>' +
+      secHead("work", "Five projects, one structure", "Each one is written the same way — problem, what I built, what it moved — so you can compare them directly.") +
+      '<div class="work-list">' + items + '</div>' +
+    '</section>';
+  }
+
+  function viewCase(slug) {
+    var w = byWork(slug);
+    if (!w) return viewMissing();
+
+    var metrics = w.metrics.map(function (m) {
+      return '<div class="ro"><div class="v num">' + esc(m.v) + '</div><div class="k">' + esc(m.k) + '</div></div>';
+    }).join("");
+
+    var inits = w.inits.map(function (it) {
+      var tags = it.tags.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join("");
+      var body = it.detail.map(function (d) { return '<li>' + esc(d) + '</li>'; }).join("");
+      return '<details class="init">' +
+        '<summary><span class="init-caret" aria-hidden="true">▸</span>' +
+        '<span><span class="init-name">' + esc(it.name) + '</span>' +
+        '<span class="init-sum">' + esc(it.sum) + '</span>' +
+        '<span class="init-tags">' + tags + '</span></span></summary>' +
+        '<div class="init-body"><ul>' + body + '</ul></div>' +
+      '</details>';
+    }).join("");
+
+    var chain = w.caps.map(function (c, i) {
+      return (i ? '<span class="arr" aria-hidden="true">›</span>' : '') + '<span class="link">' + esc(CAPS[c].label) + '</span>';
+    }).join("");
+
+    var rel = w.related.map(function (r) {
+      if (r === "thinking") {
+        return '<a href="#/thinking"><div class="rel-k">method</div>' +
+          '<div class="rel-t">How I work through a problem</div>' +
+          '<div class="rel-d">The seven stages every project above went through.</div></a>';
+      }
+      var rw = byWork(r);
+      if (!rw) return "";
+      return '<a href="#/work/' + rw.slug + '"><div class="rel-k">' + esc(rw.when) + '</div>' +
+        '<div class="rel-t">' + esc(rw.org) + '</div>' +
+        '<div class="rel-d">' + esc(rw.line) + '</div></a>';
+    }).join("");
+
+    var challenges = w.challenges.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join("");
+    var learnings = w.learnings.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join("");
+
+    return '' +
+      '<div class="cs-head">' +
+        '<div class="cs-org">' + esc(w.org) + ' / ' + esc(w.context) + '</div>' +
+        '<h1>' + esc(w.title) + '</h1>' +
+        '<dl class="spec">' +
+          '<div><dt>role</dt><dd>' + esc(w.role) + '</dd></div>' +
+          '<div><dt>period</dt><dd>' + esc(w.when) + '</dd></div>' +
+          '<div><dt>location</dt><dd>' + esc(w.where) + '</dd></div>' +
+          '<div><dt>team</dt><dd>' + esc(w.team) + '</dd></div>' +
+        '</dl>' +
+      '</div>' +
+
+      '<section>' +
+        '<p class="lede">' + esc(w.overview) + '</p>' +
+      '</section>' +
+
+      '<section>' +
+        '<div class="qa">' +
+          '<div><h3>The problem</h3><p>' + esc(w.problem) + '</p></div>' +
+          '<div><h3>Why it mattered</h3><p>' + esc(w.why) + '</p></div>' +
+          '<div><h3>Who it was for</h3><p>' + esc(w.users) + '</p></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<section>' +
+        secHead("build", "What I built", "Open any one for the detail underneath.") +
+        inits +
+      '</section>' +
+
+      '<section>' +
+        secHead("outcome", "What it moved") +
+        '<div class="readouts">' + metrics + '</div>' +
+      '</section>' +
+
+      '<section>' +
+        '<div class="learn">' +
+          '<div><h3>Hard calls</h3><ul>' + challenges + '</ul></div>' +
+          '<div><h3>What I took from it</h3><ul>' + learnings + '</ul></div>' +
+        '</div>' +
+        '<div style="margin-top:34px"><div class="chain">' + chain + '</div></div>' +
+      '</section>' +
+
+      '<section>' +
+        secHead("next", "Where to go from here") +
+        '<div class="rel">' + rel + '</div>' +
+        '<a class="back" href="#/work">← all work</a>' +
+      '</section>';
+  }
+
+  function viewJourney() {
+    var stages = JOURNEY.map(function (s) {
+      var entries = s.entries.map(function (e) {
+        var pts = e.points.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join("");
+        return '<div class="jentry">' +
+          '<div class="jentry-top"><div class="jentry-org">' + esc(e.org) + '</div>' +
+          '<div class="jentry-meta">' + esc(e.meta) + '</div></div>' +
+          '<div class="jentry-role">' + esc(e.role) + '</div>' +
+          '<ul>' + pts + '</ul>' +
+          (s.link ? '<a class="back" href="' + s.link + '">read the case study</a>' : '') +
+        '</div>';
+      }).join("");
+      return '<div class="jstage">' +
+        '<div><h3>' + esc(s.title) + '</h3><div class="jwhen">' + esc(s.when) + '</div></div>' +
+        '<div>' + entries + '</div>' +
+      '</div>';
+    }).join("");
+
+    return '<section>' +
+      secHead("journey", "Leadership, then business, then design, then product", "Six stages. The order matters — each one is why the next was possible.") +
+      stages +
+    '</section>';
+  }
+
+  function viewLab() {
+    var exps = EXPERIMENTS.map(function (e) {
+      var parts = e.parts.map(function (p) { return '<span class="chip">' + esc(p) + '</span>'; }).join("");
+      return '<div class="exp">' +
+        '<div class="exp-top"><h3>' + esc(e.title) + '</h3><span class="status">' + esc(e.status) + '</span></div>' +
+        '<dl><div><dt>the problem</dt><dd>' + esc(e.problem) + '</dd></div>' +
+        '<div><dt>what I tried</dt><dd>' + esc(e.approach) + '</dd></div></dl>' +
+        '<div class="chips">' + parts + '</div>' +
+      '</div>';
+    }).join("");
+
+    return '<section>' +
+      secHead("lab", "Things I built because I wanted to know if they'd work", "Self-directed prototypes, not client work. Nothing here shipped to customers — that is the point of a lab.") +
+      exps +
+    '</section>';
+  }
+
+  function viewThinking() {
+    var steps = PROCESS.map(function (s) {
+      return '<div class="step"><div class="step-n">' + esc(s.n) + '</div>' +
+        '<div class="step-name">' + esc(s.name) + '</div>' +
+        '<div class="step-d">' + esc(s.d) + '</div></div>';
+    }).join("");
+
+    return '<section>' +
+      secHead("method", "How I work through a problem", "This is a real sequence, not a diagram for a slide. Every project on this site went through it in this order.") +
+      '<div class="steps">' + steps + '</div>' +
+      '<p class="lede" style="margin-top:30px">You can see it most clearly in ' +
+        '<a href="#/work/chat360">the Chat360 Voice AI launch</a> and ' +
+        '<a href="#/work/cordelia-cruises">the Cordelia mobile app</a> — both 0-to-1 builds that had to move ' +
+        'through discovery, prioritization and launch against real time and team constraints.</p>' +
+    '</section>';
+  }
+
+  function viewAbout() {
+    var edu = EDUCATION.map(function (e) {
+      return '<div><div class="entry-t">' + esc(e.t) + '</div>' +
+        '<div class="entry-s">' + esc(e.s) + '</div>' +
+        '<div class="entry-m">' + esc(e.m) + '</div></div>';
+    }).join("");
+
+    var certs = CERTS.map(function (c) {
+      return '<div><div class="entry-t">' + esc(c.t) + '</div>' +
+        '<div class="entry-s">' + esc(c.s) + '</div>' +
+        '<div class="entry-m">' + esc(c.m) + '</div></div>';
+    }).join("");
+
+    var beyond = BEYOND.map(function (b) { return '<li>' + esc(b) + '</li>'; }).join("");
+
+    return '' +
+      '<section>' +
+        secHead("about", "Design school and a P&L taught me the same lesson") +
+        '<p class="lede">I learned humanity-centered design formally, through the Interaction Design Foundation ' +
+        'and Don Norman\'s course on designing for the 21st century. Then I learned it again by taking over a ' +
+        'family business and discovering that a good experience and a viable business are the same problem ' +
+        'looked at from two directions. That is the perspective I bring to AI products: the model is never the point — ' +
+        'what someone can now do that they could not before is the point.</p>' +
+      '</section>' +
+
+      '<section>' +
+        '<div class="cols">' +
+          '<div><h3 style="margin-bottom:18px">Education</h3><div class="stack">' + edu + '</div></div>' +
+          '<div><h3 style="margin-bottom:18px">Certifications</h3><div class="stack">' + certs + '</div></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<section>' +
+        '<div class="cols">' +
+          '<div><h3>Business</h3><div class="chips">' + SKILLS_BIZ.map(function (s) { return '<span class="chip">' + esc(s) + '</span>'; }).join("") + '</div></div>' +
+          '<div><h3>Technical</h3><div class="chips">' + SKILLS_TECH.map(function (s) { return '<span class="chip">' + esc(s) + '</span>'; }).join("") + '</div></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<section>' +
+        secHead("outside", "Away from a screen") +
+        '<ul class="learn" style="display:block;padding:0;list-style:none">' + beyond + '</ul>' +
+      '</section>';
+  }
+
+  function contactGrid() {
+    return '<div class="contact-grid">' +
+      '<a class="contact-cell" href="mailto:' + PROFILE.email + '">' +
+        '<div class="ck">email — fastest way to reach me</div>' +
+        '<div class="cv">' + esc(PROFILE.email) + '</div></a>' +
+      '<a class="contact-cell" href="tel:' + PROFILE.phone.replace(/\s/g, "") + '">' +
+        '<div class="ck">phone</div><div class="cv">' + esc(PROFILE.phone) + '</div></a>' +
+      '<a class="contact-cell" href="' + PROFILE.linkedin + '" target="_blank" rel="noreferrer">' +
+        '<div class="ck">linkedin</div><div class="cv">avinashdev09</div></a>' +
+    '</div>';
+  }
+
+  function viewContact() {
+    return '<section>' +
+      secHead("contact", "Let's talk", "Open to associate and senior product roles in AI, and to conversations about voice, agentic products, or building something 0-to-1.") +
+      contactGrid() +
+      '<p class="lede" style="margin-top:32px">If you are hiring, the fastest useful thing you can do is read ' +
+      '<a href="#/work/chat360">the Chat360 case study</a> — it is the clearest picture of how I work with ' +
+      'engineers on something genuinely hard.</p>' +
+    '</section>';
+  }
+
+  function viewMissing() {
+    return '<section>' +
+      secHead("404", "Nothing at that address") +
+      '<p class="lede">That route does not exist. Press ⌘K, or ' +
+      '<a href="#/">go back to the overview</a>.</p>' +
+    '</section>';
+  }
+
+  /* =========================================================
+     ROUTER
+     ========================================================= */
+
+  function titleFor(route) {
+    if (route === "#/" || route === "") return "overview";
+    if (route === "#/work") return "work";
+    if (route.indexOf("#/work/") === 0) {
+      var w = byWork(route.slice(7));
+      return w ? w.org.toLowerCase() : "not found";
+    }
+    var map = { "#/journey": "journey", "#/lab": "lab", "#/thinking": "method", "#/about": "about", "#/contact": "contact" };
+    return map[route] || "not found";
+  }
+
+  function render() {
+    var route = window.location.hash || "#/";
+    var view = el("view");
+    var html;
+    var isHome = route === "#/";
+
+    if (isHome) html = viewHome();
+    else if (route === "#/work") html = viewWork();
+    else if (route.indexOf("#/work/") === 0) html = viewCase(route.slice(7));
+    else if (route === "#/journey") html = viewJourney();
+    else if (route === "#/lab") html = viewLab();
+    else if (route === "#/thinking") html = viewThinking();
+    else if (route === "#/about") html = viewAbout();
+    else if (route === "#/contact") html = viewContact();
+    else html = viewMissing();
+
+    view.innerHTML = html;
+
+    // The desk scene only fronts the overview; every other route starts at the content.
+    var stage = el("stage");
+    var spacer = el("spacer");
+    stage.classList.toggle("live", isHome);
+    spacer.classList.toggle("on", isHome);
+    if (isHome) {
+      resetIntro();
+    } else {
+      stage.style.opacity = "";
+      el("stageInner").style.transform = "";
+      el("topbar").style.opacity = "";
+    }
+    window.scrollTo(0, 0);
+
+    el("sbRoute").textContent = route;
+    el("sbTitle").textContent = titleFor(route);
+
+    // nav current state
+    var links = el("nav").querySelectorAll("a");
+    for (var i = 0; i < links.length; i++) {
+      var href = links[i].getAttribute("href");
+      var active = route === href || (href !== "#/" && route.indexOf(href) === 0);
+      if (active) links[i].setAttribute("aria-current", "page");
+      else links[i].removeAttribute("aria-current");
+    }
+
+    if (isHome) {
+      labBind();
+      bindMap();
+      bootLine();
+    }
+    countUp();
+  }
+
+  /* =========================================================
+     FOOTER — where the profile details live now
+     ========================================================= */
+
+  var ICONS = {
+    mail: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">' +
+          '<rect x="1.2" y="3.2" width="13.6" height="9.6" rx="1.4"/><path d="M1.6 4.2 8 9l6.4-4.8"/></svg>',
+    phone: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">' +
+           '<rect x="4" y="1" width="8" height="14" rx="1.6"/><path d="M7 12.6h2"/></svg>',
+    linkedin: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">' +
+              '<path d="M3.6 5.5H1V15h2.6V5.5zM2.3 1a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM15 15h-2.6v-4.9c0-1.2-.4-2-1.5-2-.8 0-1.3.6-1.5 1.1-.1.2-.1.5-.1.8V15H6.7s0-8.1 0-9h2.6v1.3c.3-.5 1-1.3 2.5-1.3 1.8 0 3.2 1.2 3.2 3.8V15z"/></svg>'
+  };
+
+  function reachLinks() {
+    return '' +
+      '<a class="reach" href="mailto:' + PROFILE.email + '">' + ICONS.mail +
+        '<span><span class="rlabel">email</span><br>' + esc(PROFILE.email) + '</span></a>' +
+      '<a class="reach" href="tel:' + PROFILE.phone.replace(/\s/g, "") + '">' + ICONS.phone +
+        '<span><span class="rlabel">call</span><br>' + esc(PROFILE.phone) + '</span></a>' +
+      '<a class="reach" href="' + PROFILE.linkedin + '" target="_blank" rel="noreferrer">' + ICONS.linkedin +
+        '<span><span class="rlabel">linkedin</span><br>avinashdev09</span></a>';
+  }
+
+  function renderFooter() {
+    var nav = NAV.map(function (n) {
+      return '<a href="' + n.path + '">' + esc(n.label) + '</a>';
+    }).join("");
+
+    el("siteFooter").innerHTML = '<div class="foot-wrap">' +
+      '<div class="foot-top">' +
+        '<div>' +
+          '<div class="foot-name">' + esc(PROFILE.name) + '</div>' +
+          '<p class="foot-role">AI product manager working across voice, generative and agentic systems — and the business case underneath them.</p>' +
+        '</div>' +
+        '<dl class="foot-facts">' +
+          '<div class="foot-fact"><dt>based in</dt><dd>Mumbai, India</dd></div>' +
+          '<div class="foot-fact"><dt>currently</dt><dd>Founder, Nosh House Cafe</dd></div>' +
+          '<div class="foot-fact"><dt>studying</dt><dd>Masters\' Union, PGP in Technology &amp; Business Management</dd></div>' +
+        '</dl>' +
+      '</div>' +
+      '<div class="foot-reach">' + reachLinks() + '</div>' +
+      '<div class="foot-bottom">' +
+        '<nav class="foot-nav" aria-label="Footer">' + nav + '</nav>' +
+        '<span>© ' + new Date().getFullYear() + ' Avinashdev Garudapalli</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* =========================================================
+     INTRO — scroll zooms through the monitor into the console
+     ========================================================= */
+
+  var staticIntro = reduceMotion;
+
+  function resetIntro() {
+    if (staticIntro) return;
+    var stage = el("stage");
+    stage.style.opacity = "1";
+    stage.style.visibility = "visible";
+    el("stageInner").style.transform = "scale(1)";
+    el("topbar").style.opacity = "0";
+  }
+
+  function introScroll() {
+    if (staticIntro) return;
+    var stage = el("stage");
+    if (!stage.classList.contains("live")) return;
+
+    var span = window.innerHeight * 1.15;
+    var p = Math.min(Math.max(window.scrollY / span, 0), 1);
+
+    // zoom through the screen, fading as it passes the viewer
+    var scale = 1 + p * 5.2;
+    var opacity = p < 0.55 ? 1 : 1 - (p - 0.55) / 0.45;
+
+    el("stageInner").style.transform = "scale(" + scale.toFixed(3) + ")";
+    stage.style.opacity = Math.max(opacity, 0).toFixed(3);
+    stage.style.visibility = p >= 0.999 ? "hidden" : "visible";
+    el("topbar").style.opacity = Math.min(Math.max((p - 0.5) / 0.35, 0), 1).toFixed(3);
+
+    var cue = el("scrollCue");
+    if (cue) cue.style.opacity = Math.max(1 - p * 3.2, 0).toFixed(3);
+  }
+
+  function typeScreen() {
+    var nameNode = el("scName");
+    var tagNode = el("scTag");
+    var caret = el("scCaret");
+    if (!nameNode || !tagNode) return;
+
+    var NAME = "Avinash";
+    var TAG = "a Metacognist & Philomath";
+
+    // Deep-linked to an inner route: the scene is hidden, so measuring text would fail.
+    if (staticIntro || !el("stage").classList.contains("live")) {
+      nameNode.textContent = NAME;
+      tagNode.textContent = TAG;
+      if (caret) caret.setAttribute("x", "379");
+      return;
+    }
+
+    var i = 0, j = 0;
+    caret.style.display = "none";
+
+    var t1 = setInterval(function () {
+      i++;
+      nameNode.textContent = NAME.slice(0, i);
+      if (i >= NAME.length) {
+        clearInterval(t1);
+        caret.style.display = "";
+        setTimeout(function () {
+          var t2 = setInterval(function () {
+            j++;
+            tagNode.textContent = TAG.slice(0, j);
+            try {
+              caret.setAttribute("x", String(379 + tagNode.getComputedTextLength() + 4));
+            } catch (e) { /* text not measurable yet */ }
+            if (j >= TAG.length) clearInterval(t2);
+          }, 34);
+        }, 260);
+      }
+    }, 90);
+  }
+
+  /* =========================================================
+     LOAD SEQUENCE — one orchestrated moment, home only
+     ========================================================= */
+
+  var bootDone = false;
+  function bootLine() {
+    var node = el("consoleLine");
+    if (!node) return;
+    var full = 'pipeline ready — <b>6 stages online</b>, latency budget loaded';
+    if (reduceMotion || bootDone) {
+      node.innerHTML = full;
+      return;
+    }
+    bootDone = true;
+    var plain = "pipeline ready — 6 stages online, latency budget loaded";
+    var i = 0;
+    node.innerHTML = '<span class="caret"></span>';
+    var timer = setInterval(function () {
+      i++;
+      node.innerHTML = esc(plain.slice(0, i)) + '<span class="caret"></span>';
+      if (i >= plain.length) {
+        clearInterval(timer);
+        setTimeout(function () { node.innerHTML = full; }, 420);
+      }
+    }, 18);
+  }
+
+  function countUp() {
+    if (reduceMotion) return;
+    var nodes = document.querySelectorAll(".ro .v");
+    nodes.forEach(function (n) {
+      var text = n.textContent.trim();
+      var m = text.match(/^(\d+)(.*)$/);
+      if (!m) return;
+      var target = parseInt(m[1], 10);
+      var suffix = m[2];
+      if (target < 2) return;
+      var start = performance.now();
+      var dur = 620;
+      function tick(now) {
+        var p = Math.min((now - start) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        n.textContent = Math.round(target * eased) + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      n.textContent = "0" + suffix;
+      requestAnimationFrame(tick);
+    });
+  }
+
+  /* =========================================================
+     COMMAND PALETTE
+     ========================================================= */
+
+  var palIndex = 0;
+  var palMatches = COMMANDS.slice();
+
+  function palRender() {
+    var list = el("paletteList");
+    if (!palMatches.length) {
+      list.innerHTML = '<li class="palette-empty">No section matches that.</li>';
+      return;
+    }
+    list.innerHTML = palMatches.map(function (c, i) {
+      return '<li data-active="' + (i === palIndex ? "true" : "false") + '">' +
+        '<a href="' + c.path + '"><span>' + esc(c.label) + '</span>' +
+        '<span class="p-path">' + esc(c.path) + '</span></a></li>';
+    }).join("");
+  }
+
+  function palOpen() {
+    el("paletteScrim").classList.add("open");
+    var input = el("paletteInput");
+    input.value = "";
+    palMatches = COMMANDS.slice();
+    palIndex = 0;
+    palRender();
+    input.focus();
+  }
+  function palClose() {
+    el("paletteScrim").classList.remove("open");
+  }
+  function palFilter(q) {
+    q = q.trim().toLowerCase();
+    palMatches = q
+      ? COMMANDS.filter(function (c) { return (c.label + " " + c.path).toLowerCase().indexOf(q) !== -1; })
+      : COMMANDS.slice();
+    palIndex = 0;
+    palRender();
+  }
+  function palGo() {
+    if (!palMatches.length) return;
+    window.location.hash = palMatches[palIndex].path;
+    palClose();
+  }
+
+  /* =========================================================
+     BOOT
+     ========================================================= */
+
+  el("nav").innerHTML = NAV.map(function (n) {
+    return '<a href="' + n.path + '">' + esc(n.label) + '</a>';
+  }).join("");
+
+  el("paletteBtn").addEventListener("click", palOpen);
+  el("paletteScrim").addEventListener("click", function (e) {
+    if (e.target === el("paletteScrim")) palClose();
+  });
+  el("paletteInput").addEventListener("input", function (e) { palFilter(e.target.value); });
+  el("paletteList").addEventListener("mousemove", function (e) {
+    var li = e.target.closest("li");
+    if (!li || !li.parentNode) return;
+    var idx = Array.prototype.indexOf.call(el("paletteList").children, li);
+    if (idx >= 0 && idx !== palIndex) { palIndex = idx; palRender(); }
+  });
+  el("paletteList").addEventListener("click", function () { setTimeout(palClose, 0); });
+
+  document.addEventListener("keydown", function (e) {
+    var open = el("paletteScrim").classList.contains("open");
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      open ? palClose() : palOpen();
+      return;
+    }
+    if (!open) return;
+    if (e.key === "Escape") { e.preventDefault(); palClose(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); palIndex = Math.min(palIndex + 1, palMatches.length - 1); palRender(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); palIndex = Math.max(palIndex - 1, 0); palRender(); }
+    else if (e.key === "Enter") { e.preventDefault(); palGo(); }
+  });
+
+  var motionOn = !reduceMotion;
+  el("motionBtn").textContent = motionOn ? "motion on" : "motion off";
+  el("motionBtn").setAttribute("aria-pressed", motionOn ? "true" : "false");
+  el("motionBtn").addEventListener("click", function () {
+    motionOn = !motionOn;
+    reduceMotion = !motionOn;
+    this.textContent = motionOn ? "motion on" : "motion off";
+    this.setAttribute("aria-pressed", motionOn ? "true" : "false");
+    var lab = el("lab");
+    if (lab) {
+      lab.classList.toggle("paused", !motionOn);
+      labState.running = motionOn;
+      var pb = el("labPause");
+      if (pb) pb.textContent = motionOn ? "pause signal" : "resume signal";
+    }
+  });
+
+  function clock() {
+    var d = new Date();
+    el("sbClock").textContent =
+      String(d.getHours()).padStart(2, "0") + ":" +
+      String(d.getMinutes()).padStart(2, "0") + ":" +
+      String(d.getSeconds()).padStart(2, "0");
+  }
+  clock();
+  setInterval(clock, 1000);
+
+  if (staticIntro) document.body.classList.add("static-intro");
+
+  var introTicking = false;
+  window.addEventListener("scroll", function () {
+    if (introTicking) return;
+    introTicking = true;
+    requestAnimationFrame(function () { introScroll(); introTicking = false; });
+  }, { passive: true });
+
+  el("scrollCue").addEventListener("click", function () {
+    window.scrollTo({
+      top: Math.round(window.innerHeight * 1.22),
+      behavior: staticIntro ? "auto" : "smooth"
+    });
+  });
+
+  window.addEventListener("hashchange", render);
+  renderFooter();
+  render();
+  typeScreen();
+  introScroll();
+})();
+</script>
