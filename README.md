@@ -9,14 +9,30 @@ Stack: Next.js (App Router) + TypeScript + Tailwind CSS v4 + Framer Motion.
 
 ## Two implementations live here
 
-- `design/avinash-console.html` — **the current design direction.** A
-  self-contained single-file build: a desk-scene opening that zooms through
-  the monitor into an operator console, an interactive voice-pipeline
-  latency lab, and a bipartite project/capability map. Open it directly in a
-  browser; no build step.
+- `design/avinash-console.html` — **the current site.** A self-contained
+  single-file build: a desk-scene opening that zooms through the monitor
+  into an operator console, an interactive voice-pipeline latency lab, and
+  a responsive project/capability map.
 - `src/` — the earlier multi-page Next.js draft. Same information
-  architecture and content, earlier visual direction. Not yet updated to
-  match the console design.
+  architecture and content, earlier visual direction. Superseded by the
+  console build above.
+
+## Publishing
+
+`design/avinash-console.html` is authored as a fragment, because the Claude
+Artifact host supplies the surrounding document. GitHub Pages does not, so
+the build step wraps it (the viewport meta especially — without it phones
+render the page at a 980px fallback width):
+
+```bash
+node scripts/build-site.mjs   # design/avinash-console.html -> docs/index.html
+```
+
+Commit the regenerated `docs/index.html` alongside any source change.
+
+To serve it: **Settings → Pages → Source: "Deploy from a branch"**, then
+pick the branch and the `/docs` folder. `docs/.nojekyll` keeps Pages from
+running the file through Jekyll.
 
 ## Structure
 
