@@ -21,6 +21,9 @@ const DESCRIPTION =
   "Avinash Garudapalli — AI product manager. Voice AI, generative and " +
   "agentic products, and the business case underneath them.";
 
+// Canonical home of the site. Everything that reports a URL points here.
+const SITE_URL = "https://expoitster.github.io/AvinashG/";
+
 const page = `<!doctype html>
 <html lang="en">
 <head>
@@ -28,9 +31,12 @@ const page = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="${DESCRIPTION}">
 <meta name="theme-color" content="#101722">
+<link rel="canonical" href="${SITE_URL}">
+<meta property="og:url" content="${SITE_URL}">
 <meta property="og:title" content="Avinash Garudapalli">
 <meta property="og:description" content="${DESCRIPTION}">
 <meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23101722'/><circle cx='16' cy='16' r='7' fill='%23FFB03A'/></svg>">
 <style>
   :root { color-scheme: dark; }
