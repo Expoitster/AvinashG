@@ -30,9 +30,12 @@ node scripts/build-site.mjs   # design/avinash-console.html -> docs/index.html
 
 Commit the regenerated `docs/index.html` alongside any source change.
 
-To serve it: **Settings → Pages → Source: "Deploy from a branch"**, then
-pick the branch and the `/docs` folder. `docs/.nojekyll` keeps Pages from
-running the file through Jekyll.
+Deployment is automatic: `.github/workflows/deploy-pages.yml` publishes
+`docs/` to GitHub Pages on every push to `main`. It passes
+`enablement: true` to `actions/configure-pages`, so the first run turns
+Pages on by itself — no manual toggle in repository settings.
+
+`docs/.nojekyll` keeps Pages from running the file through Jekyll.
 
 ## Structure
 
