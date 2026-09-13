@@ -102,6 +102,10 @@ function audit(isTouch) {
   const copy = main ? (main.innerText || "") : "";
   const holes = ["undefined", "null", "NaN", "[object Object]"]
     .filter((t) => new RegExp("(^|\\s)" + t.replace("[", "\\[") + "(\\s|$|\\.|,)").test(copy));
+  // CSS/JS escape sequences that leaked into visible copy (e.g. \2197, \u00b7)
+  const escaped = /\\[0-9a-fA-F]{4}|\\u[0-9a-fA-F]{4}/.test(copy)
+    ? [(copy.match(/\\[0-9a-fA-F]{4}|\\u[0-9a-fA-F]{4}/) || [""])[0]] : [];
+  holes.push.apply(holes, escaped);
 
   return {
     holes,
@@ -131,7 +135,7 @@ function audit(isTouch) {
     const page = await ctx.newPage();
     page.on("pageerror", (e) => fail(d.name, "-", "JS error: " + e.message));
     page.on("console", (m) => {
-      if (m.type() === "error" && !/ERR_CONNECTION|ERR_NAME|favicon/.test(m.text())) {
+      if (m.type() === "error" && !/ERR_CONNECTION|ERR_NAME|ERR_TUNNEL|ERR_PROXY|ERR_INTERNET|favicon|lovable\.app/.test(m.text())) {
         fail(d.name, "-", "console error: " + m.text().slice(0, 90));
       }
     });
@@ -227,6 +231,45 @@ function audit(isTouch) {
       if (map.w <= 760 && map.wires !== 0) fail(d.name, "map", `wires should be dropped when stacked, got ${map.wires}`);
     }
 
+    // every external product link is present, safe and correctly targeted
+    const links = await page.evaluate(async () => {
+      location.hash = "#/";
+      await new Promise((r) => setTimeout(r, 900));
+      const want = ["tragenie.lovable.app", "noshhouse.lovable.app", "blankstore.lovable.app"];
+      const ext = [...document.querySelectorAll('a[href^="http"]')];
+      const found = want.map((w) => ext.some((a) => a.href.includes(w)));
+      const unsafe = ext.filter((a) => a.target === "_blank" && !/noreferrer|noopener/.test(a.rel || ""));
+      // a favicon of any shape must stay inside its fixed chip
+      const spill = [...document.querySelectorAll(".mark-chip")].filter((c) => {
+        const cr = c.getBoundingClientRect();
+        return [...c.querySelectorAll("img")].some((im) => {
+          const ir = im.getBoundingClientRect();
+          return ir.width > cr.width + 1 || ir.height > cr.height + 1;
+        });
+      }).length;
+      return { found, unsafe: unsafe.length, spill, total: ext.length };
+    });
+    const fallback = await page.evaluate(() => {
+      const chips = [...document.querySelectorAll(".mark-chip")];
+      if (!chips.length) return { err: "no brand chips rendered" };
+      const bad = chips.filter((c) => {
+        const r = c.getBoundingClientRect();
+        const word = c.querySelector(".mark-word");
+        const wordVisible = word && getComputedStyle(word).display !== "none";
+        // square, sized, and showing *something* even with the image gone
+        return r.width < 16 || r.height < 16 || Math.abs(r.width - r.height) > 1 || !wordVisible;
+      });
+      return { total: chips.length, bad: bad.length };
+    });
+    if (fallback.err) fail(d.name, "brand", fallback.err);
+    else if (fallback.bad) fail(d.name, "brand", `${fallback.bad}/${fallback.total} chips broke without a favicon`);
+
+    links.found.forEach((ok, i) => {
+      if (!ok) fail(d.name, "links", `missing product link #${i + 1} on home`);
+    });
+    if (links.unsafe) fail(d.name, "links", `${links.unsafe} target=_blank links without rel=noreferrer`);
+    if (links.spill) fail(d.name, "links", `${links.spill} brand marks overflow their chip`);
+
     // résumé route renders real CV content
     const cv = await page.evaluate(async () => {
       location.hash = "#/resume";
@@ -241,8 +284,28 @@ function audit(isTouch) {
     if (cv.contacts !== 3) fail(d.name, "resume", `expected 3 contact links, got ${cv.contacts}`);
     if (!cv.print) fail(d.name, "resume", "print button missing");
 
+    // BlankStore is a first-class entry, not just a link
+    const bs = await page.evaluate(async () => {
+      location.hash = "#/";
+      await new Promise((r) => setTimeout(r, 800));
+      const btn = document.querySelector('[data-gal="blankstore"]');
+      if (!btn) return { err: "no blankstore entry" };
+      btn.click();
+      await new Promise((r) => setTimeout(r, 500));
+      const open = !document.getElementById("galScrim").hidden;
+      const cats = document.querySelectorAll(".gal-cat").length;
+      document.getElementById("galClose").click();
+      await new Promise((r) => setTimeout(r, 300));
+      return { open, cats };
+    });
+    if (bs.err) fail(d.name, "blankstore", bs.err);
+    else {
+      if (!bs.open) fail(d.name, "blankstore", "gallery did not open");
+      if (bs.cats < 2) fail(d.name, "blankstore", `only ${bs.cats} gallery categories`);
+    }
+
     // contact links must be actionable (mailto / tel / linkedin)
-    const links = await page.evaluate(async () => {
+    const contact = await page.evaluate(async () => {
       location.hash = "#/contact";
       await new Promise((r) => setTimeout(r, 600));
       const hs = [...document.querySelectorAll(".contact-cell, .reach")].map((a) => a.getAttribute("href") || "");
@@ -252,9 +315,9 @@ function audit(isTouch) {
         li: hs.some((h) => h.includes("linkedin.com")),
       };
     });
-    if (!links.mailto) fail(d.name, "contact", "no mailto: link");
-    if (!links.tel) fail(d.name, "contact", "no tel: link (phone dialler)");
-    if (!links.li) fail(d.name, "contact", "no LinkedIn link");
+    if (!contact.mailto) fail(d.name, "contact", "no mailto: link");
+    if (!contact.tel) fail(d.name, "contact", "no tel: link (phone dialler)");
+    if (!contact.li) fail(d.name, "contact", "no LinkedIn link");
 
     await ctx.close();
   }

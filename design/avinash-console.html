@@ -940,6 +940,84 @@
   /* the drawn artwork drifts against its frame as the section scrolls */
   .plate .art { transform: translate3d(0, calc((var(--p, .5) - .5) * -26px), 0); }
 
+  /* ---------- live products ---------- */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  .live-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; }
+  .live-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .3s, transform .5s cubic-bezier(.16,1,.3,1);
+  }
+  .live-card:hover, .live-card:focus-visible { border-color: var(--signal); transform: translateY(-4px); }
+  .live-head { display: flex; align-items: center; gap: 14px; }
+
+  /* fixed box, so a favicon of any shape or size cannot break the layout */
+  .mark-chip {
+    position: relative;
+    flex: none;
+    width: var(--chip, 34px);
+    height: var(--chip, 34px);
+    display: grid;
+    place-items: center;
+    background: var(--ground-2);
+    border: 1px solid var(--rule-2);
+    overflow: hidden;
+  }
+  .mark-chip img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+    background: var(--ground-2);
+  }
+  .mark-word {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: calc(var(--chip, 34px) * .46);
+    color: var(--signal);
+  }
+
+  .live-name { font-family: var(--f-display); font-size: 1.1rem; font-weight: 600; }
+  .live-kind { margin-top: 3px; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--dim-2); }
+  .live-blurb { margin-top: 16px; color: var(--dim); font-size: .92rem; font-weight: 300; line-height: 1.6; }
+  .live-go { margin-top: auto; padding-top: 18px; font-size: .88rem; color: var(--dim-2); }
+  .live-card:hover .live-go { color: var(--signal); }
+  .live-go::after { content: " ↗"; }
+
+  /* inline "visit the live site" button used inside case studies */
+  .visit {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 48px;
+    margin-top: 22px;
+    padding: 10px 16px;
+    border: 1px solid var(--signal-deep);
+    background: rgba(255,176,58,.08);
+    color: var(--signal);
+    text-decoration: none;
+    font-size: .92rem;
+    transition: background-color .2s, border-color .2s;
+  }
+  .visit:hover { background: rgba(255,176,58,.18); border-color: var(--signal); }
+  .visit::after { content: "↗"; opacity: .7; }
+
   /* ---------- results cards ---------- */
   .results { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
   .rcard {
@@ -2184,11 +2262,20 @@
 
   var EXPERIMENTS = [
     {
-      title: "Travel discovery platform",
-      status: "prototype",
+      title: "Tragenie \u2014 travel discovery",
+      status: "live",
+      site: "tragenie",
       problem: "Travel research is scattered across Instagram, Reddit and Google Reviews, so planning a trip means manually reconciling sources that disagree.",
       approach: "Pulled signal from all three into a single personalization layer, combining location intelligence with a recommendation engine to attack the data-fragmentation problem directly.",
       parts: ["Instagram", "Reddit", "Google Reviews", "Location intelligence", "Recommendation engine"]
+    },
+    {
+      title: "BlankStore \u2014 dropshipping storefront",
+      status: "live",
+      site: "blankstore",
+      problem: "Standing up a commerce brand end to end \u2014 storefront, catalogue, checkout and fulfilment \u2014 without a team.",
+      approach: "Built and shipped the whole thing solo, then ran it: brand and catalogue decisions, checkout flow, and the fulfilment loop behind the orders.",
+      parts: ["Brand", "Catalogue", "Checkout", "Fulfilment", "Dropshipping"]
     },
     {
       title: "Courier AI",
@@ -2198,7 +2285,7 @@
       parts: ["Image input", "Computer vision", "Dimension estimation", "Weight estimation", "Shipping recommendation"]
     },
     {
-      title: "Workforce intelligence",
+      title: "Workforce intelligence (HR Workflow)",
       status: "prototype",
       problem: "Knowing what a team can actually cover against what the business needs is hard when employee data is spread across disconnected tools.",
       approach: "Built a capability matrix and intelligence log against business requirements, orchestrating ClickUp, Google Sheets, Gemini and Make.com to keep a live view of capability health.",
@@ -2261,8 +2348,9 @@
     },
     {
       id: "travel-ai",
-      kind: "Project",
-      title: "Travel Discovery Platform",
+      kind: "Live product",
+      site: "tragenie",
+      title: "Tragenie — travel discovery",
       blurb: "Pulling trustworthy travel signal out of Instagram, Reddit and Google Reviews.",
       when: "In progress",
       plate: "field",
@@ -2271,6 +2359,20 @@
         { cat: "Problem", items: ["Data fragmentation", "User context"] },
         { cat: "Approach", items: ["Personalization", "Location intelligence", "Recommendation engine"] },
         { cat: "Prototype", items: ["Early screens"] }
+      ]
+    },
+    {
+      id: "blankstore",
+      kind: "Live product",
+      site: "blankstore",
+      title: "BlankStore — dropshipping brand",
+      blurb: "Built a storefront end to end: brand, catalogue, checkout and fulfilment.",
+      when: "Live",
+      plate: "field",
+      gallery: [
+        { cat: "Storefront", items: ["Home", "Catalogue", "Product page"] },
+        { cat: "Commerce", items: ["Cart", "Checkout"] },
+        { cat: "Operations", items: ["Fulfilment flow"] }
       ]
     },
     {
@@ -2292,6 +2394,7 @@
   var RESULT_CARDS = [
     {
       slug: "nosh-house",
+      site: "noshhouse",
       label: "Nosh House impact",
       head: "A family cafe to a break-even business",
       figures: [
@@ -2336,6 +2439,66 @@
       ]
     }
   ];
+
+
+  /* Live products — things a visitor can actually open and use.
+     Logos are loaded from each site's own favicon at view time, because this
+     build environment cannot reach them; a wordmark shows if that fails. */
+  var SITES = [
+    {
+      id: "tragenie",
+      name: "Tragenie",
+      url: "https://tragenie.lovable.app",
+      kind: "Travel product",
+      blurb: "Travel discovery that pulls trustworthy signal out of Instagram, Reddit and Google Reviews.",
+      related: "#/lab"
+    },
+    {
+      id: "noshhouse",
+      name: "Nosh House",
+      url: "https://noshhouse.lovable.app",
+      kind: "Cafe I own",
+      blurb: "The digital front of the cafe: menu, QR ordering and the loyalty loop behind it.",
+      related: "#/work/nosh-house"
+    },
+    {
+      id: "blankstore",
+      name: "BlankStore",
+      url: "https://blankstore.lovable.app",
+      kind: "Dropshipping brand",
+      blurb: "A dropshipping storefront built end to end — brand, catalogue, checkout and fulfilment.",
+      related: null
+    }
+  ];
+
+  function siteById(id) {
+    for (var i = 0; i < SITES.length; i++) if (SITES[i].id === id) return SITES[i];
+    return null;
+  }
+
+  /* A brand chip: the real favicon when it loads, a wordmark when it does not. */
+  function brandMark(site, size) {
+    var px = size || 34;
+    return '<span class="mark-chip" style="--chip:' + px + 'px">' +
+      '<img src="' + site.url + '/favicon.ico" alt="" loading="lazy" ' +
+      'onerror="this.remove()">' +
+      '<span class="mark-word">' + esc(site.name.slice(0, 1)) + '</span>' +
+      '</span>';
+  }
+
+  function liveCards() {
+    return '<div class="live-grid">' + SITES.map(function (st, i) {
+      return '<a class="live-card rv" style="--i:' + i + '" href="' + st.url + '" ' +
+        'target="_blank" rel="noreferrer">' +
+        '<div class="live-head">' + brandMark(st) +
+          '<div><div class="live-name">' + esc(st.name) + '</div>' +
+          '<div class="live-kind">' + esc(st.kind) + '</div></div></div>' +
+        '<p class="live-blurb">' + esc(st.blurb) + '</p>' +
+        '<span class="live-go">Open the site' +
+        '<span class="sr-only"> (opens in a new tab)</span></span>' +
+      '</a>';
+    }).join("") + '</div>';
+  }
 
   var NAV = [
     { path: "#/story", label: "Story" },
@@ -2723,7 +2886,8 @@
         '<h3>' + esc(c.head) + '</h3>' +
         '<div class="rcard-figs">' + figs + '</div>' +
         '<div class="rcard-snap"><ul>' + snap + '</ul></div>' +
-        '<span class="rcard-go">Open the case study</span>' +
+        '<span class="rcard-go">Open the case study' +
+        (c.site && siteById(c.site) ? '  \u00b7  live site inside' : '') + '</span>' +
       '</a>';
     }).join("");
 
@@ -2736,10 +2900,11 @@
         : "";
       var count = (r.gallery || []).reduce(function (a, g) { return a + g.items.length; }, 0);
 
+      var st = r.site ? siteById(r.site) : null;
       return '<button class="rec rv" type="button" style="--i:' + i + '" data-gal="' + r.id + '">' +
         plate(r.plate, null) +
         '<div class="rec-body">' +
-          '<span class="rec-kind">' + esc(r.kind) + '</span>' +
+          '<span class="rec-kind">' + (st ? brandMark(st, 20) + " " : "") + esc(r.kind) + '</span>' +
           '<h3>' + esc(r.title) + '</h3>' +
           '<p>' + esc(r.blurb) + '</p>' +
           stops +
@@ -2770,6 +2935,12 @@
         '<h1 class="rv">AI product manager. Currently shipping, travelling and building in the open.</h1>' +
         '<p class="lede rv" style="--i:1">What I have been doing lately \u2014 this list keeps moving.</p>' +
         '<div class="recent rv" style="--i:2">' + recent + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Live", "Things you can actually open",
+          "Not screenshots \u2014 working products you can use right now.") +
+        liveCards() +
       '</section>' +
 
       '<section data-scene>' +
@@ -2827,9 +2998,12 @@
     }).join("") + '</div>';
   }
 
+  var CASE_SITE = { "nosh-house": "noshhouse" };
+
   function viewCase(slug) {
     var w = byWork(slug);
     if (!w) return viewMissing();
+    var liveSite = CASE_SITE[slug] ? siteById(CASE_SITE[slug]) : null;
 
     var metrics = w.metrics.map(function (m, i) {
       return '<div class="ro rv tilt" style="--i:' + i + '"><div class="v num">' + esc(m.v) + '</div>' +
@@ -2882,6 +3056,11 @@
 
       '<section>' +
         '<p class="lede rv">' + esc(w.overview) + '</p>' +
+        (liveSite
+          ? '<a class="visit rv" href="' + liveSite.url + '" target="_blank" rel="noreferrer">' +
+            brandMark(liveSite, 24) + 'Visit ' + esc(liveSite.name) +
+            '<span class="sr-only"> (opens in a new tab)</span></a>'
+          : "") +
       '</section>' +
 
       '<section>' +
@@ -2933,6 +3112,11 @@
         '<dl><div><dt>the problem</dt><dd>' + esc(e.problem) + '</dd></div>' +
         '<div><dt>what I tried</dt><dd>' + esc(e.approach) + '</dd></div></dl>' +
         '<div class="chips">' + parts + '</div>' +
+        (e.site && siteById(e.site)
+          ? '<a class="visit" href="' + siteById(e.site).url + '" target="_blank" rel="noreferrer">' +
+            brandMark(siteById(e.site), 22) + 'Open ' + esc(siteById(e.site).name) +
+            '<span class="sr-only"> (opens in a new tab)</span></a>'
+          : "") +
       '</div>';
     }).join("");
 
@@ -3017,7 +3201,10 @@
     var cats = r.gallery || [];
 
     el("galTitle").textContent = r.title;
-    el("galSub").textContent = r.kind + " \u00b7 " + r.when;
+    var st = r.site ? siteById(r.site) : null;
+    el("galSub").innerHTML = esc(r.kind) + " \u00b7 " + esc(r.when) +
+      (st ? '  \u00b7  <a href="' + st.url + '" target="_blank" rel="noreferrer" ' +
+        'style="color:var(--signal)">Open ' + esc(st.name) + ' \u2197</a>' : "");
 
     el("galCats").innerHTML = cats.map(function (c, i) {
       return '<button class="gal-cat" role="tab" type="button" data-cat="' + i + '" ' +
@@ -3459,7 +3646,10 @@
     var spacer = el("spacer");
     stage.classList.toggle("live", isHome);
     spacer.classList.toggle("on", isHome);
-    window.scrollTo(0, 0);
+    // A route change should land at the top instantly. Without an explicit
+    // auto behaviour the page inherits scroll-behavior: smooth and animates
+    // the jump, which reads as lag when switching pages.
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
 
     // current-page state, in the top bar and the drawer alike
