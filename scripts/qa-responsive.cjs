@@ -14,10 +14,10 @@ const path = require("path");
 const FILE = "file://" + path.resolve(__dirname, "../docs/index.html");
 
 const ROUTES = [
-  "#/", "#/work", "#/work/chat360", "#/work/cordelia-cruises",
-  "#/work/nosh-house", "#/work/yapita-health", "#/work/events-fusion",
-  "#/journey", "#/lab", "#/thinking", "#/about", "#/resume", "#/contact",
-  "#/does-not-exist",
+  "#/", "#/story", "#/experience", "#/beyond",
+  "#/work/chat360", "#/work/cordelia-cruises", "#/work/nosh-house",
+  "#/work/yapita-health", "#/work/events-fusion",
+  "#/lab", "#/thinking", "#/about", "#/resume", "#/contact",
 ];
 
 const DEVICES = [
@@ -99,7 +99,12 @@ function audit(isTouch) {
   });
 
   const main = document.getElementById("view");
+  const copy = main ? (main.innerText || "") : "";
+  const holes = ["undefined", "null", "NaN", "[object Object]"]
+    .filter((t) => new RegExp("(^|\\s)" + t.replace("[", "\\[") + "(\\s|$|\\.|,)").test(copy));
+
   return {
+    holes,
     overflow,
     offenders: [...new Set(offenders)].slice(0, 4),
     small: [...new Set(small)].slice(0, 5),
@@ -148,7 +153,8 @@ function audit(isTouch) {
       if (r.small.length) warn(d.name, route, `tap target <40px: ${r.small.join(", ")}`);
       if (r.tiny.length) fail(d.name, route, `text under 11.5px: ${r.tiny.join(", ")}`);
       if (r.stuck.length) fail(d.name, route, `content stuck hidden: ${r.stuck.join(", ")}`);
-      if (route !== "#/does-not-exist" && r.textLen < 120) fail(d.name, route, `page nearly empty (${r.textLen} chars)`);
+      if (r.holes && r.holes.length) fail(d.name, route, `rendered placeholder text: ${r.holes.join(", ")}`);
+      if (r.textLen < 120) fail(d.name, route, `page nearly empty (${r.textLen} chars)`);
     }
 
     // ---- interaction checks ----
@@ -174,7 +180,7 @@ function audit(isTouch) {
     else {
       if (!menu.open) fail(d.name, "menu", "drawer did not open");
       if (!menu.onScreen) fail(d.name, "menu", "drawer opened off-screen");
-      if (menu.links < 13) fail(d.name, "menu", `only ${menu.links} destinations`);
+      if (menu.links < 12) fail(d.name, "menu", `only ${menu.links} destinations`);
       if (!menu.closed) fail(d.name, "menu", "drawer did not close");
     }
 

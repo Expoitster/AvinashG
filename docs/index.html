@@ -23,7 +23,7 @@
 <title>Avinash Garudapalli</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;450;500;600&display=swap">
 
 <style>
   :root {
@@ -42,13 +42,17 @@
     --data-deep: #1E5A66;
     --good: #79E0A8;
 
-    --f-display: "Chakra Petch", "Trebuchet MS", sans-serif;
+    --f-display: "Sora", "Segoe UI", system-ui, sans-serif;
     --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    /* mono is reserved for measured values — never for decorative labels */
     --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-    --topbar-h: 52px;
-    --statusbar-h: 30px;
-    --measure: 66ch;
+    --topbar-h: 64px;
+    --statusbar-h: 0px;
+    --measure: 62ch;
+
+    /* editorial rhythm */
+    --sec-y: clamp(90px, 13vh, 160px);
   }
 
   * { box-sizing: border-box; }
@@ -147,18 +151,6 @@
     transition: background-color .16s, border-color .16s;
   }
   .cta-top:hover { background: rgba(255,176,58,.18); border-color: var(--signal); }
-
-  .kbd-open {
-    font-family: var(--f-mono);
-    font-size: .75rem;
-    color: var(--dim-2);
-    background: var(--panel);
-    border: 1px solid var(--rule);
-    padding: 7px 9px;
-    cursor: pointer;
-    transition: color .16s, border-color .16s;
-  }
-  .kbd-open:hover { color: var(--paper); border-color: var(--rule-2); }
 
   /* ---------- menu drawer (all sizes) ---------- */
   .nav-toggle {
@@ -274,39 +266,47 @@
     padding: 0 20px;
   }
 
-  section { padding: 68px 0; border-bottom: 1px solid var(--rule); }
-  section:last-of-type { border-bottom: 0; }
+  section { padding: var(--sec-y) 0; scroll-margin-top: calc(var(--topbar-h) + 20px); }
+  section + section { border-top: 1px solid var(--rule); }
 
   h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
 
   h1 {
-    font-size: clamp(2rem, 4.4vw, 2.95rem);
-    font-weight: 700;
-    line-height: 1.06;
-    letter-spacing: -.015em;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -.03em;
   }
   h2 {
-    font-size: clamp(1.45rem, 3vw, 2.05rem);
+    font-size: clamp(1.7rem, 3.6vw, 2.5rem);
     font-weight: 600;
-    line-height: 1.12;
-    letter-spacing: -.01em;
+    line-height: 1.14;
+    letter-spacing: -.025em;
   }
-  h3 { font-size: 1.1rem; font-weight: 600; line-height: 1.25; }
+  h3 { font-size: 1.15rem; font-weight: 600; line-height: 1.3; letter-spacing: -.01em; }
 
   p { margin: 0; max-width: var(--measure); }
-  .lede { font-size: 1.075rem; color: var(--dim); line-height: 1.62; }
-
-  /* section head: left rule encodes section boundary, no eyebrow labels */
-  .sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 30px; }
-  .sec-head .idx {
-    font-family: var(--f-mono);
-    font-size: .8rem;
-    color: var(--dim-2);
-    padding-top: 4px;
-    white-space: nowrap;
+  .lede {
+    font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+    color: var(--dim);
+    line-height: 1.66;
+    font-weight: 300;
   }
-  .sec-head .txt { flex: 1; min-width: 0; }
-  .sec-head p { margin-top: 12px; color: var(--dim); font-size: .975rem; }
+
+  /* Section head: a number and a rule. The number is real — sections are an
+     ordered narrative, so the sequence carries meaning. */
+  .sec-head { margin-bottom: clamp(32px, 5vh, 56px); max-width: 46ch; }
+  .sec-head .idx {
+    display: block;
+    font-family: var(--f-body);
+    font-size: .78rem;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 18px;
+  }
+  .sec-head p { margin-top: 18px; color: var(--dim); font-size: 1.02rem; font-weight: 300; line-height: 1.62; }
 
   a { color: var(--data); }
   a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, canvas:focus-visible {
@@ -323,17 +323,6 @@
     border: 1px solid var(--rule);
     padding: 26px;
   }
-  .panel::before, .panel::after {
-    content: "";
-    position: absolute;
-    width: 9px; height: 9px;
-    border-color: var(--rule-2);
-    border-style: solid;
-    pointer-events: none;
-  }
-  .panel::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-  .panel::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
-
   .panel-bar {
     display: flex;
     align-items: center;
@@ -349,23 +338,6 @@
 
   /* ---------- hero ---------- */
   .hero { padding-top: 34px; padding-bottom: 56px; }
-  .console-line {
-    font-family: var(--f-mono);
-    font-size: .8rem;
-    color: var(--dim-2);
-    margin-bottom: 20px;
-    min-height: 1.3em;
-  }
-  .console-line b { color: var(--good); font-weight: 500; }
-  .caret {
-    display: inline-block;
-    width: 7px; height: 1em;
-    background: var(--signal);
-    vertical-align: -2px;
-    animation: blink 1.05s steps(1) infinite;
-  }
-  @keyframes blink { 0%,50% { opacity:1 } 50.01%,100% { opacity:0 } }
-
   .hero h1 { max-width: 21ch; }
   .hero .lede { margin-top: 16px; }
   .hero-meta {
@@ -580,11 +552,11 @@
 
   .sys-col { position: relative; z-index: 1; min-width: 0; }
   .sys-col-head {
-    font-family: var(--f-mono);
-    font-size: .7rem;
-    letter-spacing: .07em;
+    font-family: var(--f-body);
+    font-size: .82rem;
+    font-weight: 500;
     color: var(--dim-2);
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
   .sys-list { display: grid; gap: 10px; }
 
@@ -834,77 +806,6 @@
   .rel-t { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; margin-top: 8px; transition: color .18s; }
   .rel-d { color: var(--dim); font-size: .88rem; margin-top: 7px; }
 
-  /* ---------- status bar ---------- */
-  .statusbar {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    z-index: 45;
-    height: var(--statusbar-h);
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    padding: 0 14px;
-    background: var(--ground-2);
-    border-top: 1px solid var(--rule);
-    font-family: var(--f-mono);
-    font-size: .72rem;
-    color: var(--dim-2);
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-  .statusbar .sb-route { color: var(--signal); }
-  .statusbar button {
-    font: inherit;
-    background: transparent;
-    border: 0;
-    color: var(--dim-2);
-    cursor: pointer;
-    padding: 4px 0;
-  }
-  .statusbar button:hover { color: var(--paper); }
-  .sb-right { margin-left: auto; display: flex; gap: 18px; }
-
-  /* ---------- command palette ---------- */
-  .palette-scrim {
-    position: fixed; inset: 0; z-index: 60;
-    background: rgba(8,12,18,.72);
-    display: none;
-    padding-top: 12vh;
-    justify-content: center;
-  }
-  .palette-scrim.open { display: flex; }
-  .palette {
-    width: min(560px, 92vw);
-    height: fit-content;
-    background: var(--panel);
-    border: 1px solid var(--rule-2);
-    box-shadow: 0 30px 70px rgba(0,0,0,.55);
-  }
-  .palette input {
-    width: 100%;
-    font-family: var(--f-mono);
-    font-size: .95rem;
-    color: var(--paper);
-    background: var(--ground-2);
-    border: 0;
-    border-bottom: 1px solid var(--rule);
-    padding: 16px 18px;
-    outline: none;
-  }
-  .palette input::placeholder { color: var(--dim-2); }
-  .palette ul { list-style: none; margin: 0; padding: 6px; max-height: 46vh; overflow-y: auto; }
-  .palette li a {
-    display: flex; justify-content: space-between; gap: 14px;
-    padding: 11px 13px;
-    text-decoration: none;
-    color: var(--dim);
-    font-size: .92rem;
-  }
-  .palette li a .p-path { font-family: var(--f-mono); font-size: .74rem; color: var(--dim-2); }
-  .palette li[data-active="true"] a { background: var(--ground-2); color: var(--paper); }
-  .palette li[data-active="true"] a .p-path { color: var(--signal); }
-  .palette-empty { padding: 18px; color: var(--dim-2); font-size: .88rem; }
-
   /* ---------- opening scene: the desk ---------- */
   .stage {
     position: fixed;
@@ -1033,6 +934,149 @@
     .foot-top { grid-template-columns: 1fr; gap: 26px; }
   }
 
+  /* ---------- abstract plates ----------
+     Stand-ins for photography. Deliberately non-photographic so nothing
+     pretends to be a real memory; swap for real images when they exist. */
+  .plate {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    background: var(--ground-2);
+    border: 1px solid var(--rule);
+    aspect-ratio: 4 / 3;
+  }
+  .plate svg { display: block; width: 100%; height: 100%; }
+  .plate figcaption {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 14px 16px;
+    font-size: .82rem;
+    color: var(--dim);
+    background: linear-gradient(to top, rgba(12,18,27,.94), rgba(12,18,27,0));
+  }
+  .plate-wide { aspect-ratio: 16 / 7; }
+  .plate-tall { aspect-ratio: 3 / 4; }
+
+  /* the drawn artwork drifts against its frame as the section scrolls */
+  .plate .art { transform: translate3d(0, calc((var(--p, .5) - .5) * -26px), 0); }
+
+  /* ---------- wayfinding: three doors ---------- */
+  .doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .door {
+    display: block;
+    position: relative;
+    padding: 30px 26px 26px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    overflow: hidden;
+    transition: border-color .3s, transform .45s cubic-bezier(.16,1,.3,1);
+  }
+  .door:hover { border-color: var(--signal); transform: translateY(-4px); }
+  .door-n {
+    font-family: var(--f-mono);
+    font-size: .74rem;
+    color: var(--signal);
+    letter-spacing: .04em;
+  }
+  .door h3 { margin-top: 14px; font-size: 1.5rem; font-weight: 600; }
+  .door p { margin-top: 10px; color: var(--dim); font-size: .94rem; font-weight: 300; }
+  .door-go { margin-top: 20px; display: block; font-size: .86rem; color: var(--dim-2); }
+  .door:hover .door-go { color: var(--signal); }
+
+  /* ---------- story ---------- */
+  .story-lede { font-size: clamp(1.3rem, 2.6vw, 1.9rem); font-weight: 300; line-height: 1.42; letter-spacing: -.015em; color: var(--paper); max-width: 22ch; }
+  .story-block { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 72px); align-items: center; }
+  .story-block.flip > .plate { order: 2; }
+  .story-block h3 { font-size: clamp(1.3rem, 2.4vw, 1.75rem); font-weight: 600; }
+  .story-block p { margin-top: 16px; color: var(--dim); font-weight: 300; line-height: 1.7; }
+
+  /* placeholder for copy the owner has not written yet */
+  .awaiting {
+    margin-top: 18px;
+    padding: 20px;
+    border: 1px dashed var(--rule-2);
+    color: var(--dim-2);
+    font-size: .9rem;
+    line-height: 1.6;
+    background: rgba(255,255,255,.012);
+  }
+  .awaiting b { color: var(--dim); font-weight: 500; display: block; margin-bottom: 6px; }
+
+  /* ---------- beyond ---------- */
+  .beyond-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 22px; }
+  .beyond-card { background: var(--panel); border: 1px solid var(--rule); overflow: hidden; }
+  .beyond-card .plate { border: 0; border-bottom: 1px solid var(--rule); }
+  .beyond-body { padding: 22px; }
+  .beyond-body h3 { font-size: 1.15rem; }
+  .beyond-body p { margin-top: 10px; color: var(--dim); font-size: .93rem; font-weight: 300; line-height: 1.62; }
+  .beyond-when { display: block; margin-top: 12px; font-family: var(--f-mono); font-size: .74rem; color: var(--dim-2); }
+
+  /* ---------- experience spine ---------- */
+  .xp { display: grid; gap: 0; }
+  .xp-row {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: clamp(20px, 4vw, 56px);
+    padding: clamp(30px, 4vh, 52px) 0;
+    border-top: 1px solid var(--rule);
+    align-items: start;
+  }
+  .xp-row:last-child { border-bottom: 1px solid var(--rule); }
+  .xp-when { font-family: var(--f-mono); font-size: .8rem; color: var(--dim-2); padding-top: 6px; }
+  .xp-org { font-size: clamp(1.4rem, 2.6vw, 1.9rem); font-weight: 600; letter-spacing: -.02em; }
+  .xp-role { margin-top: 6px; color: var(--signal); font-size: .96rem; }
+  .xp-sum { margin-top: 14px; color: var(--dim); font-weight: 300; line-height: 1.66; }
+  .xp-points { margin: 16px 0 0; padding-left: 18px; }
+  .xp-points li { color: var(--dim); font-size: .95rem; font-weight: 300; margin-bottom: 8px; line-height: 1.6; }
+  .xp-points li::marker { color: var(--rule-2); }
+  .xp-metrics { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 18px; }
+  .xp-metric { font-size: .9rem; color: var(--dim); }
+  .xp-metric b { font-family: var(--f-mono); color: var(--data); font-weight: 500; margin-right: 6px; }
+  .xp-link {
+    display: inline-flex; align-items: center; min-height: 44px;
+    margin-top: 12px; font-size: .9rem; color: var(--signal); text-decoration: none;
+  }
+  .xp-link:hover { text-decoration: underline; }
+
+  @media (max-width: 760px) {
+    .story-block { grid-template-columns: 1fr; }
+    .story-block.flip > .plate { order: 0; }
+    .xp-row { grid-template-columns: 1fr; gap: 12px; }
+    .xp-when { padding-top: 0; }
+  }
+
+  /* ---------- scroll scenes ----------
+     Each [data-scene] section gets a live --p (0..1) as it crosses the
+     viewport, so its parts can move at their own rates. */
+  [data-scene] { --p: .5; }
+
+  body.anim [data-scene] .sec-head {
+    transform: translate3d(0, calc((var(--p) - .5) * -30px), 0);
+    will-change: transform;
+  }
+  body.anim [data-scene] .sec-head .idx {
+    letter-spacing: calc(.18em + (1 - var(--p)) * .06em);
+  }
+  body.anim [data-scene] .readouts,
+  body.anim [data-scene] .doors,
+  body.anim [data-scene] .work-list,
+  body.anim [data-scene] .beyond-grid {
+    transform: translate3d(0, calc((var(--p) - .5) * 18px), 0);
+    will-change: transform;
+  }
+  body.anim [data-scene] .story-block > div {
+    transform: translate3d(0, calc((var(--p) - .5) * -14px), 0);
+  }
+  body.anim [data-scene] .xp-when {
+    transform: translate3d(0, calc((var(--p) - .5) * -20px), 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.anim [data-scene] * { transform: none !important; }
+  }
+
   /* ---------- motion system ---------- */
 
   /* Reveals are opt-in: without JS every element stays at its resting,
@@ -1076,21 +1120,7 @@
   }
 
   /* section index marker gets a live tick as you pass it */
-  .sec-head .idx { position: relative; padding-left: 14px; }
-  .sec-head .idx::before {
-    content: "";
-    position: absolute;
-    left: 0; top: 10px;
-    width: 6px; height: 6px;
-    background: var(--rule-2);
-    transition: background-color .45s, box-shadow .45s;
-  }
-  section.seen .sec-head .idx::before {
-    background: var(--signal);
-    box-shadow: 0 0 9px 1px rgba(255,176,58,.55);
-  }
-
-  /* panel gets a subtle pointer-tracked tilt */
+/* panel gets a subtle pointer-tracked tilt */
   .tilt { transition: transform .5s cubic-bezier(.16,1,.3,1); transform-style: preserve-3d; }
   .tilt.tracking { transition: transform .12s linear; }
 
@@ -1225,7 +1255,6 @@
   /* the inline nav and the keyboard shortcut both need room and a keyboard */
   @media (max-width: 1040px) {
     .nav { display: none; }
-    .kbd-open { display: none; }
   }
   @media (min-width: 1041px) {
     .nav-toggle-label { display: none; }
@@ -1254,7 +1283,6 @@
 
   @media (max-width: 620px) {
     /* the console status bar is a desktop affordance; it only steals height here */
-    .statusbar { display: none; }
     body { padding-bottom: env(safe-area-inset-bottom, 0); }
 
     /* stage segment labels stop fitting — a legend below carries them instead */
@@ -1295,7 +1323,7 @@
 
   /* ---------- print (the résumé page) ---------- */
   @media print {
-    .topbar, .statusbar, .rail, .stage, .drawer, .drawer-scrim, .site-footer,
+    .topbar, .rail, .stage, .drawer, .drawer-scrim, .site-footer,
     .backdrop, #spacer, .print-hide { display: none !important; }
     body { background: #fff; color: #111; padding: 0; }
     .cv { color: #111; }
@@ -1474,7 +1502,6 @@
   <a class="mark" href="#/"><span class="dot" aria-hidden="true"></span>Avinash<span class="mark-full">&nbsp;Garudapalli</span></a>
   <nav class="nav" id="nav" aria-label="Sections"></nav>
   <a class="cta-top" href="#/contact">Let's connect</a>
-  <button class="kbd-open" id="paletteBtn" aria-haspopup="dialog">⌘K</button>
   <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navDrawer">
     <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
     <span class="nav-toggle-label">Menu</span>
@@ -1497,21 +1524,6 @@
 
 <footer class="site-footer" id="siteFooter"></footer>
 
-<div class="statusbar" role="status">
-  <span>route <span class="sb-route" id="sbRoute">#/</span></span>
-  <span id="sbTitle"></span>
-  <span class="sb-right">
-    <button id="motionBtn" aria-pressed="true">motion on</button>
-    <span id="sbClock" class="num"></span>
-  </span>
-</div>
-
-<div class="palette-scrim" id="paletteScrim">
-  <div class="palette" role="dialog" aria-modal="true" aria-label="Jump to section">
-    <input id="paletteInput" type="text" placeholder="Jump to…" autocomplete="off" spellcheck="false">
-    <ul id="paletteList"></ul>
-  </div>
-</div>
 
 <script>
 (function () {
@@ -2025,26 +2037,28 @@
      ========================================================= */
 
   var NAV = [
-    { path: "#/work", label: "Work" },
-    { path: "#/journey", label: "Journey" },
-    { path: "#/lab", label: "AI Lab" },
-    { path: "#/thinking", label: "Product Thinking" },
-    { path: "#/about", label: "About" },
+    { path: "#/story", label: "Story" },
+    { path: "#/experience", label: "Experience" },
+    { path: "#/thinking", label: "Thinking" },
+    { path: "#/lab", label: "Lab" },
+    { path: "#/beyond", label: "Beyond" },
     { path: "#/resume", label: "Résumé" }
   ];
 
-  // Every destination, grouped the way the site is actually organised.
+  // Every destination, grouped so there is exactly one obvious home for each
+  // kind of thing: who I am, what I did, how I think, everything else.
   var MENU = [
     {
-      group: "Start here",
+      group: "Start",
       items: [
-        { path: "#/", label: "Overview", note: "Positioning, results, the system map" }
+        { path: "#/", label: "Overview", note: "Positioning and results at a glance" },
+        { path: "#/story", label: "Story", note: "How I think, and where it came from" }
       ]
     },
     {
-      group: "Case studies",
+      group: "Experience",
       items: [
-        { path: "#/work", label: "All work", note: "Five projects, one structure" },
+        { path: "#/experience", label: "All experience", note: "Every role, in order" },
         { path: "#/work/chat360", label: "Chat360", note: "Enterprise Voice AI, 0-to-1" },
         { path: "#/work/cordelia-cruises", label: "Cordelia Cruises", note: "Mobile app, CMS, Voice AI" },
         { path: "#/work/nosh-house", label: "Nosh House Cafe", note: "Founder, full P&L" },
@@ -2053,26 +2067,27 @@
       ]
     },
     {
-      group: "Background",
+      group: "How I work",
       items: [
-        { path: "#/journey", label: "Journey", note: "How the six stages stacked up" },
-        { path: "#/lab", label: "AI Lab", note: "Self-directed experiments" },
         { path: "#/thinking", label: "Product Thinking", note: "Discover through measure" },
-        { path: "#/about", label: "About", note: "Education, certifications, philosophy" },
-        { path: "#/resume", label: "Résumé", note: "The one-page version" }
+        { path: "#/lab", label: "Lab", note: "Self-directed AI experiments" }
+      ]
+    },
+    {
+      group: "Beyond the job",
+      items: [
+        { path: "#/beyond", label: "Beyond", note: "Travel, leadership, the things outside work" },
+        { path: "#/about", label: "Education", note: "Degrees and certifications" }
       ]
     },
     {
       group: "Get in touch",
       items: [
+        { path: "#/resume", label: "Résumé", note: "The one-page version" },
         { path: "#/contact", label: "Contact", note: "Email, phone, LinkedIn" }
       ]
     }
   ];
-
-  var COMMANDS = MENU.reduce(function (acc, g) {
-    return acc.concat(g.items.map(function (i) { return { path: i.path, label: i.label }; }));
-  }, []);
 
   /* =========================================================
      HELPERS
@@ -2269,11 +2284,11 @@
       '<div class="sysmap" id="sysmap">' +
         '<svg class="sysmap-wires" id="sysWires" aria-hidden="true"></svg>' +
         '<div class="sys-col">' +
-          '<div class="sys-col-head">WHAT I BUILT</div>' +
+          '<div class="sys-col-head">What I built</div>' +
           '<div class="sys-list">' + projects + '</div>' +
         '</div>' +
         '<div class="sys-col">' +
-          '<div class="sys-col-head">WHAT IT EXERCISED</div>' +
+          '<div class="sys-col-head">What it exercised</div>' +
           '<div class="sys-list">' + caps + '</div>' +
         '</div>' +
       '</div>' +
@@ -2385,19 +2400,10 @@
      ========================================================= */
 
   function viewHome() {
-    var impact = IMPACT.map(function (m, i) {
-      return '<div class="ro rv tilt" style="--i:' + i + '"><div class="v num">' + esc(m.v) + '</div>' +
+    var impact = IMPACT.slice(0, 6).map(function (m, i) {
+      return '<div class="ro rv" style="--i:' + i + '"><div class="v num">' + esc(m.v) + '</div>' +
         '<div class="k">' + esc(m.k) + '</div>' +
         '<div class="d">' + esc(m.d) + '</div></div>';
-    }).join("");
-
-    var trace = TRACE.map(function (t, i) {
-      return '<div class="trace-row rv rv-l" style="--i:' + i + '">' +
-        '<div class="trace-n">' + String(i + 1).padStart(2, "0") + '</div>' +
-        '<div><div class="trace-stage">' + esc(t.stage) + '</div>' +
-        '<div class="trace-role">' + esc(t.role) + '</div>' +
-        '<div class="trace-when">' + esc(t.when) + '</div></div>' +
-      '</div>';
     }).join("");
 
     var caps = Object.keys(CAPS).map(function (k, i) {
@@ -2405,53 +2411,60 @@
         '<p>' + esc(CAPS[k].d) + '</p></div>';
     }).join("");
 
-    return '' +
-      '<section class="hero">' +
-        '<div class="console-line rv instant" id="consoleLine"></div>' +
-        '<h1 class="rv" style="--i:1">I build voice AI that answers before you notice the pause.</h1>' +
-        '<p class="lede rv" style="--i:2">Two years shipping 0-to-1 AI products — and a P&amp;L of my own.</p>' +
-        '<div data-par="-0.05"><div class="rv rv-scale" style="--i:3">' + labMarkup() + '</div></div>' +
-      '</section>' +
+    var doors = [
+      { n: "01", t: "Story", d: "How I think, why I travel alone, and what that has to do with product.", h: "#/story", go: "Read the story" },
+      { n: "02", t: "Experience", d: "Six roles in order, from running a college fest to owning a P&L.", h: "#/experience", go: "See the work" },
+      { n: "03", t: "Beyond", d: "The Himalayas, the abacus, and the things nobody paid me to do.", h: "#/beyond", go: "Look around" }
+    ].map(function (x, i) {
+      return '<a class="door rv" style="--i:' + i + '" href="' + x.h + '">' +
+        '<span class="door-n">' + x.n + '</span>' +
+        '<h3>' + esc(x.t) + '</h3><p>' + esc(x.d) + '</p>' +
+        '<span class="door-go">' + esc(x.go) + '</span></a>';
+    }).join("");
 
-      '<section>' +
-        secHead("results", "What the work actually moved", "Every figure below comes from a shipped project, not an estimate.") +
-        '<div data-par="0.06"><div class="readouts">' + impact + '</div></div>' +
-      '</section>' +
-
-      '<section>' +
-        secHead("map", "The work, as a system", "Five projects on the left, the capabilities each one actually exercised on the right.") +
-        '<div data-par="0.04"><div class="rv rv-scale">' + buildMap() + '</div></div>' +
-      '</section>' +
-
-      '<section>' +
-        secHead("path", "How the skills stacked up", "Each stage built the thing the next one needed.") +
-        '<div data-par="0.05"><div class="trace"><div class="trace-fill"></div>' + trace + '</div></div>' +
-      '</section>' +
-
-      '<section>' +
-        secHead("capability", "What I bring to a team") +
-        '<div data-par="0.05"><div class="matrix">' + caps + '</div></div>' +
-      '</section>' +
-
-      '<section>' +
-        secHead("contact", "Open to AI and product roles") +
-        '<div data-par="0.04"><div class="rv">' + contactGrid() + '</div></div>' +
-      '</section>';
-  }
-
-  function viewWork() {
-    var items = WORK.map(function (w, i) {
+    var featured = ["chat360", "cordelia-cruises", "nosh-house"].map(function (slug, i) {
+      var w = byWork(slug);
       return '<a class="work-item rv" style="--i:' + i + '" href="#/work/' + w.slug + '">' +
         '<div><div class="work-org">' + esc(w.org) + '</div>' +
         '<div class="work-line">' + esc(w.line) + '</div></div>' +
-        '<div class="work-when">' + esc(w.role) + '<br>' + esc(w.when) + '</div>' +
-      '</a>';
+        '<div class="work-when">' + esc(w.role) + '<br>' + esc(w.when) + '</div></a>';
     }).join("");
 
-    return '<section>' +
-      secHead("work", "Five projects, one structure", "Each one is written the same way — problem, what I built, what it moved — so you can compare them directly.") +
-      '<div data-par="0.05"><div class="work-list">' + items + '</div></div>' +
-    '</section>';
+    return '' +
+      '<section class="hero" data-scene>' +
+        '<h1 class="rv">I build voice AI that answers before you notice the pause.</h1>' +
+        '<p class="lede rv" style="--i:1">AI product manager. Two years shipping 0-to-1 AI products \u2014 and a P&amp;L of my own.</p>' +
+        '<div class="rv rv-scale" style="--i:2">' + labMarkup() + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Results", "What the work actually moved",
+          "Every figure comes from a shipped project, not an estimate.") +
+        '<div class="readouts">' + impact + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Where to go", "Three ways in",
+          "Whatever you came to find out, it has one obvious home.") +
+        '<div class="doors">' + doors + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Selected work", "Three projects worth the detail") +
+        '<div class="work-list">' + featured + '</div>' +
+        '<a class="back" href="#/experience">All six roles</a>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Capability", "The through-line across every project",
+          "Pick a project to trace exactly which capabilities it exercised.") +
+        '<div class="rv rv-scale">' + buildMap() + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Contact", "Open to AI and product roles") +
+        '<div class="rv">' + contactGrid() + '</div>' +
+      '</section>';
   }
 
   function viewCase(slug) {
@@ -2540,32 +2553,8 @@
       '<section>' +
         secHead("next", "Where to go from here") +
         '<div data-par="0.04"><div class="rel rv">' + rel + '</div></div>' +
-        '<a class="back" href="#/work">← all work</a>' +
+        '<a class="back" href="#/experience">← all experience</a>' +
       '</section>';
-  }
-
-  function viewJourney() {
-    var stages = JOURNEY.map(function (s) {
-      var entries = s.entries.map(function (e, j) {
-        var pts = e.points.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join("");
-        return '<div class="jentry rv rv-r" style="--i:' + j + '">' +
-          '<div class="jentry-top"><div class="jentry-org">' + esc(e.org) + '</div>' +
-          '<div class="jentry-meta">' + esc(e.meta) + '</div></div>' +
-          '<div class="jentry-role">' + esc(e.role) + '</div>' +
-          '<ul>' + pts + '</ul>' +
-          (s.link ? '<a class="back" href="' + s.link + '">read the case study</a>' : '') +
-        '</div>';
-      }).join("");
-      return '<div class="jstage">' +
-        '<div class="rv rv-l"><h3>' + esc(s.title) + '</h3><div class="jwhen">' + esc(s.when) + '</div></div>' +
-        '<div>' + entries + '</div>' +
-      '</div>';
-    }).join("");
-
-    return '<section>' +
-      secHead("journey", "Leadership, then business, then design, then product", "Six stages. The order matters — each one is why the next was possible.") +
-      '<div data-par="0.05">' + stages + '</div>' +
-    '</section>';
   }
 
   function viewLab() {
@@ -2647,6 +2636,259 @@
       '</section>';
   }
 
+  /* =========================================================
+     ABSTRACT PLATES — drawn stand-ins for photographs
+     ========================================================= */
+
+  function plate(kind, caption, cls) {
+    var art = "";
+
+    if (kind === "contour") {
+      // nested contour rings, like a topographic map of somewhere unnamed
+      var rings = "";
+      for (var i = 0; i < 13; i++) {
+        var t = i / 12;
+        rings += '<ellipse cx="' + (200 + i * 4) + '" cy="' + (150 - i * 2) + '" ' +
+          'rx="' + (16 + i * 15) + '" ry="' + (11 + i * 10.5) + '" ' +
+          'transform="rotate(' + (-14 + i * 1.6) + ' 200 150)" ' +
+          'fill="none" stroke="' + (i % 4 === 0 ? "#4A6389" : "#2C3D57") + '" ' +
+          'stroke-width="' + (i % 4 === 0 ? 1.4 : 1) + '" opacity="' + (0.85 - t * 0.35) + '"/>';
+      }
+      art = rings +
+        '<circle cx="204" cy="146" r="4" fill="#FFB03A"/>' +
+        '<circle cx="204" cy="146" r="11" fill="none" stroke="#FFB03A" stroke-opacity=".45"/>';
+    }
+
+    if (kind === "route") {
+      // a travelled path with stops along it
+      var pts = [[34, 236], [96, 186], [150, 205], [214, 132], [276, 158], [330, 92], [372, 112]];
+      var d = pts.map(function (p, i) { return (i ? "L" : "M") + p[0] + " " + p[1]; }).join(" ");
+      art = '<path d="' + d + '" fill="none" stroke="#FFB03A" stroke-width="1.8" ' +
+        'stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>' +
+        pts.map(function (p, i) {
+          return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (i === pts.length - 1 ? 6 : 3.5) + '" ' +
+            'fill="' + (i === pts.length - 1 ? "#FFB03A" : "#0C121B") + '" stroke="#FFB03A" stroke-width="1.6"/>';
+        }).join("") +
+        '<path d="M0 262 H400" stroke="#2C3D57" stroke-width="1"/>';
+    }
+
+    if (kind === "field") {
+      // a scatter that resolves into a gradient — signal out of noise
+      var dots = "";
+      for (var r = 0; r < 9; r++) {
+        for (var c = 0; c < 15; c++) {
+          var x = 26 + c * 25, y = 34 + r * 26;
+          var dist = Math.abs(c - 9) / 9 + Math.abs(r - 4) / 5;
+          var op = Math.max(0.08, 0.92 - dist * 0.72);
+          var rad = Math.max(1.1, 3.6 - dist * 2.1);
+          dots += '<circle cx="' + x + '" cy="' + y + '" r="' + rad.toFixed(2) + '" ' +
+            'fill="' + (dist < 0.36 ? "#FFB03A" : "#6FE3F2") + '" opacity="' + op.toFixed(2) + '"/>';
+        }
+      }
+      art = dots;
+    }
+
+    if (kind === "horizon") {
+      // layered ridgelines receding into haze
+      var layers = "";
+      var seeds = [[210, "#1B2838", 0.95], [172, "#22344A", 0.85], [134, "#2B4257", 0.7], [98, "#35506A", 0.5]];
+      seeds.forEach(function (s, i) {
+        var base = s[0], step = 40 + i * 9, path = "M0 300 L0 " + base;
+        for (var x = 0; x <= 400; x += step) {
+          var h = base - (((x * 7 + i * 53) % 41) - 16);
+          path += " L" + x + " " + h.toFixed(0);
+        }
+        layers += '<path d="' + path + ' L400 300 Z" fill="' + s[1] + '" opacity="' + s[2] + '"/>';
+      });
+      art = layers + '<circle cx="312" cy="72" r="17" fill="#FFB03A" opacity=".82"/>';
+    }
+
+    return '<figure class="plate ' + (cls || "") + '">' +
+      '<svg class="art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+      art + '</svg>' +
+      (caption ? '<figcaption>' + esc(caption) + '</figcaption>' : "") +
+      '</figure>';
+  }
+
+  function awaiting(what, hint) {
+    return '<div class="awaiting"><b>' + esc(what) + '</b>' + esc(hint) + '</div>';
+  }
+
+  /* =========================================================
+     STORY — structure only; the words are Avinash's to write
+     ========================================================= */
+
+  function viewStory() {
+    return '' +
+      '<section data-scene>' +
+        secHead("01 — Story", "The way I think came before the job title") +
+        '<p class="story-lede rv">Metacognist and philomath: I study how I think, and I keep ' +
+        'learning in public until the thinking gets better.</p>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        '<div class="story-block">' +
+          '<div class="rv">' +
+            '<h3>How I think</h3>' +
+            '<p>Thinking about thinking — noticing the pattern I default to, and choosing a ' +
+            'different one on purpose.</p>' +
+            awaiting("Your words go here",
+              "What does metacognition actually look like in your work? A decision you " +
+              "reconsidered, a bias you caught, a method you built for yourself.") +
+          '</div>' +
+          plate("field", null) +
+        '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        '<div class="story-block flip">' +
+          plate("contour", null) +
+          '<div class="rv">' +
+            '<h3>Always learning</h3>' +
+            '<p>A philomath collects questions faster than answers.</p>' +
+            awaiting("Your words go here",
+              "What are you learning right now, and why that? What rabbit hole did you " +
+              "fall down recently that had nothing to do with work?") +
+          '</div>' +
+        '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("02 — Travel", "Going alone, on purpose") +
+        '<div class="story-block">' +
+          '<div class="rv">' +
+            '<h3>Solo travel</h3>' +
+            '<p>Travelling alone removes the option of deferring to someone else.</p>' +
+            awaiting("Your words go here",
+              "Where have you gone solo? What changed in how you think because of it? " +
+              "One specific moment beats a list of countries.") +
+          '</div>' +
+          plate("route", null) +
+        '</div>' +
+        '<div style="margin-top:28px">' + plate("horizon", "The 14,000-ft Himalayan trek — four days, 20–25 kg carried", "plate-wide rv") + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("03 — Next", "Where this leads") +
+        '<div class="rel rv">' +
+          '<a href="#/experience"><div class="rel-k">Experience</div>' +
+          '<div class="rel-t">What I have actually built</div>' +
+          '<div class="rel-d">Every role in order, with the outcomes attached.</div></a>' +
+          '<a href="#/thinking"><div class="rel-k">Method</div>' +
+          '<div class="rel-t">How I work through a problem</div>' +
+          '<div class="rel-d">The seven stages every project went through.</div></a>' +
+        '</div>' +
+      '</section>';
+  }
+
+  /* =========================================================
+     BEYOND — the things outside the job
+     ========================================================= */
+
+  function viewBeyond() {
+    var cards = [
+      { k: "horizon", t: "The Himalayas", p: "A four-day trek at 14,000 ft carrying 20–25 kg. Resilience is easier to claim than to carry uphill.", w: "4 days · 14,000 ft" },
+      { k: "route", t: "Solo travel", p: "Going places alone, deciding alone, and being wrong alone until the decisions get better.", w: "Ongoing" },
+      { k: "field", t: "UCMAS Abacus", p: "Certified at Level 4 with an International Grade 10 Distinction — mental arithmetic trained young.", w: "Level 4 · Grade 10 Distinction" },
+      { k: "contour", t: "Tug of war and the 400m", p: "First place in one and third in the other, on the same day. Two very different kinds of effort.", w: "Same afternoon" }
+    ].map(function (c, i) {
+      return '<div class="beyond-card rv" style="--i:' + i + '">' +
+        plate(c.k, null) +
+        '<div class="beyond-body"><h3>' + esc(c.t) + '</h3><p>' + esc(c.p) + '</p>' +
+        '<span class="beyond-when">' + esc(c.w) + '</span></div></div>';
+    }).join("");
+
+    return '' +
+      '<section data-scene>' +
+        secHead("Beyond", "What I do when nobody is paying me to") +
+        '<p class="lede rv">Leadership, endurance and curiosity showed up here long before they ' +
+        'showed up on a résumé.</p>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        '<div class="beyond-grid">' + cards + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Leadership", "Getting things done without authority") +
+        '<div class="story-block">' +
+          '<div class="rv">' +
+            '<h3>Sponsorship Head, College Fest</h3>' +
+            '<p>Secured 7–8 sponsors and onboarded 20 stalls for a university&rsquo;s first ' +
+            'engineering fest — stakeholder management and end-to-end execution, with no ' +
+            'budget and no mandate.</p>' +
+            '<p style="margin-top:14px">At AIESEC I ranked #2 in Pune driving digital customer ' +
+            'acquisition through data-driven outreach during COVID-19, and built corporate ' +
+            'partnerships from scratch.</p>' +
+          '</div>' +
+          plate("field", null) +
+        '</div>' +
+      '</section>';
+  }
+
+  /* =========================================================
+     EXPERIENCE — one home for the whole career
+     ========================================================= */
+
+  function viewExperience() {
+    var rows = WORK.map(function (w) {
+      var points = w.inits.slice(0, 3).map(function (it) {
+        return '<li>' + esc(it.sum) + '</li>';
+      }).join("");
+      var metrics = w.metrics.map(function (m) {
+        return '<span class="xp-metric"><b>' + esc(m.v) + '</b>' + esc(m.k) + '</span>';
+      }).join("");
+
+      return '<div class="xp-row rv">' +
+        '<div class="xp-when">' + esc(w.when) + '<br>' + esc(w.where) + '</div>' +
+        '<div>' +
+          '<div class="xp-org">' + esc(w.org) + '</div>' +
+          '<div class="xp-role">' + esc(w.role) + '</div>' +
+          '<p class="xp-sum">' + esc(w.line) + '</p>' +
+          '<ul class="xp-points">' + points + '</ul>' +
+          '<div class="xp-metrics">' + metrics + '</div>' +
+          '<a class="xp-link" href="#/work/' + w.slug + '">Read the full case study</a>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    var early = JOURNEY[0].entries.map(function (e) {
+      return '<div class="xp-row rv">' +
+        '<div class="xp-when">' + esc(e.meta) + '</div>' +
+        '<div><div class="xp-org">' + esc(e.org) + '</div>' +
+        '<div class="xp-role">' + esc(e.role) + '</div>' +
+        '<ul class="xp-points">' + e.points.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join("") + '</ul>' +
+        '</div></div>';
+    }).join("");
+
+    return '' +
+      '<section data-scene>' +
+        secHead("Experience", "Six roles, in the order they happened") +
+        '<p class="lede rv">Leadership, then business development, then design, then product, ' +
+        'then AI, then owning the whole thing. Each one is why the next was possible.</p>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        '<div class="xp">' + rows + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Before that", "Where the habits came from") +
+        '<div class="xp">' + early + '</div>' +
+      '</section>' +
+
+      '<section data-scene>' +
+        secHead("Now", "Current direction") +
+        '<div class="story-block">' +
+          '<div class="rv"><h3>AI and agentic product management</h3>' +
+          '<p>Post Graduate Programme in Technology and Business Management at Masters&rsquo; ' +
+          'Union, building toward agentic AI product work.</p>' +
+          '<a class="xp-link" href="#/lab">See what I am building on my own</a></div>' +
+          plate("field", null) +
+        '</div>' +
+      '</section>';
+  }
+
   function viewResume() {
     var jobs = WORK.map(function (w) {
       var bullets = w.metrics.map(function (m) {
@@ -2658,7 +2900,7 @@
       return '<div class="cv-job rv">' +
         '<div class="cv-job-top">' +
           '<div><span class="cv-org">' + esc(w.org) + '</span> ' +
-          '<span class="cv-role">' + esc(w.roleTitle) + '</span></div>' +
+          '<span class="cv-role">' + esc(w.role) + '</span></div>' +
           '<span class="cv-when">' + esc(w.when) + ' / ' + esc(w.where) + '</span>' +
         '</div>' +
         '<ul class="cv-points">' + bullets + '</ul>' +
@@ -2752,8 +2994,9 @@
       return w ? w.org.toLowerCase() : "not found";
     }
     var map = {
-      "#/journey": "journey", "#/lab": "ai lab", "#/thinking": "product thinking",
-      "#/about": "about", "#/resume": "résumé", "#/contact": "contact"
+      "#/story": "story", "#/experience": "experience", "#/lab": "lab",
+      "#/thinking": "thinking", "#/beyond": "beyond", "#/about": "education",
+      "#/resume": "résumé", "#/contact": "contact"
     };
     return map[route] || "not found";
   }
@@ -2765,9 +3008,10 @@
     var isHome = route === "#/";
 
     if (isHome) html = viewHome();
-    else if (route === "#/work") html = viewWork();
+    else if (route === "#/story") html = viewStory();
+    else if (route === "#/experience" || route === "#/work" || route === "#/journey") html = viewExperience();
     else if (route.indexOf("#/work/") === 0) html = viewCase(route.slice(7));
-    else if (route === "#/journey") html = viewJourney();
+    else if (route === "#/beyond") html = viewBeyond();
     else if (route === "#/lab") html = viewLab();
     else if (route === "#/thinking") html = viewThinking();
     else if (route === "#/about") html = viewAbout();
@@ -2777,6 +3021,11 @@
 
     view.innerHTML = html;
 
+    // Every section is a scroll scene, whichever view produced it.
+    Array.prototype.forEach.call(view.querySelectorAll("section"), function (sec) {
+      sec.setAttribute("data-scene", "");
+    });
+
     // The desk scene only fronts the overview; every other route starts at the content.
     var stage = el("stage");
     var spacer = el("spacer");
@@ -2784,8 +3033,6 @@
     spacer.classList.toggle("on", isHome);
     window.scrollTo(0, 0);
 
-    el("sbRoute").textContent = route;
-    el("sbTitle").textContent = titleFor(route);
 
     // current-page state, in the top bar and the drawer alike
     var links = document.querySelectorAll("#nav a, #navBody .drawer-link");
@@ -2800,7 +3047,6 @@
     if (isHome) {
       labBind();
       bindMap();
-      bootLine();
     }
     motionRoute(isHome);
     countUp();
@@ -2868,6 +3114,7 @@
     vh: window.innerHeight,
     docH: 1,
     layers: [],
+    scenes: [],
     trace: null,
     started: false
   };
@@ -2883,6 +3130,11 @@
       var r = p.el.getBoundingClientRect();
       p.top = r.top + window.scrollY;
       p.h = r.height;
+    });
+
+    M.scenes = Array.prototype.map.call(document.querySelectorAll("[data-scene]"), function (el) {
+      var r = el.getBoundingClientRect();
+      return { el: el, top: r.top + window.scrollY, h: r.height };
     });
 
     var trace = document.querySelector(".trace");
@@ -2967,6 +3219,15 @@
 
     updateIntro(sy);
     updateTrace(sy);
+
+    // Every section publishes its own 0..1 scroll progress, so each one can
+    // carry motion of its own rather than sharing one global parallax.
+    for (var si = 0; si < M.scenes.length; si++) {
+      var sc = M.scenes[si];
+      if (sc.top - sy > M.vh * 1.4 || sc.top + sc.h - sy < -M.vh * 0.4) continue;
+      var prog = (sy + M.vh - sc.top) / (sc.h + M.vh);
+      sc.el.style.setProperty("--p", (prog < 0 ? 0 : prog > 1 ? 1 : prog).toFixed(4));
+    }
 
     // layered parallax across sections
     var center = sy + M.vh / 2;
@@ -3140,29 +3401,6 @@
      LOAD SEQUENCE — one orchestrated moment, home only
      ========================================================= */
 
-  var bootDone = false;
-  function bootLine() {
-    var node = el("consoleLine");
-    if (!node) return;
-    var full = 'pipeline ready — <b>6 stages online</b>, latency budget loaded';
-    if (reduceMotion || bootDone) {
-      node.innerHTML = full;
-      return;
-    }
-    bootDone = true;
-    var plain = "pipeline ready — 6 stages online, latency budget loaded";
-    var i = 0;
-    node.innerHTML = '<span class="caret"></span>';
-    var timer = setInterval(function () {
-      i++;
-      node.innerHTML = esc(plain.slice(0, i)) + '<span class="caret"></span>';
-      if (i >= plain.length) {
-        clearInterval(timer);
-        setTimeout(function () { node.innerHTML = full; }, 420);
-      }
-    }, 18);
-  }
-
   var countIO = null;
 
   function runCount(n) {
@@ -3247,52 +3485,6 @@
   }
 
   /* =========================================================
-     COMMAND PALETTE
-     ========================================================= */
-
-  var palIndex = 0;
-  var palMatches = COMMANDS.slice();
-
-  function palRender() {
-    var list = el("paletteList");
-    if (!palMatches.length) {
-      list.innerHTML = '<li class="palette-empty">No section matches that.</li>';
-      return;
-    }
-    list.innerHTML = palMatches.map(function (c, i) {
-      return '<li data-active="' + (i === palIndex ? "true" : "false") + '">' +
-        '<a href="' + c.path + '"><span>' + esc(c.label) + '</span>' +
-        '<span class="p-path">' + esc(c.path) + '</span></a></li>';
-    }).join("");
-  }
-
-  function palOpen() {
-    el("paletteScrim").classList.add("open");
-    var input = el("paletteInput");
-    input.value = "";
-    palMatches = COMMANDS.slice();
-    palIndex = 0;
-    palRender();
-    input.focus();
-  }
-  function palClose() {
-    el("paletteScrim").classList.remove("open");
-  }
-  function palFilter(q) {
-    q = q.trim().toLowerCase();
-    palMatches = q
-      ? COMMANDS.filter(function (c) { return (c.label + " " + c.path).toLowerCase().indexOf(q) !== -1; })
-      : COMMANDS.slice();
-    palIndex = 0;
-    palRender();
-  }
-  function palGo() {
-    if (!palMatches.length) return;
-    window.location.hash = palMatches[palIndex].path;
-    palClose();
-  }
-
-  /* =========================================================
      BOOT
      ========================================================= */
 
@@ -3305,60 +3497,9 @@
   el("navClose").addEventListener("click", closeMenu);
   el("navScrim").addEventListener("click", closeMenu);
 
-  el("paletteBtn").addEventListener("click", palOpen);
-  el("paletteScrim").addEventListener("click", function (e) {
-    if (e.target === el("paletteScrim")) palClose();
-  });
-  el("paletteInput").addEventListener("input", function (e) { palFilter(e.target.value); });
-  el("paletteList").addEventListener("mousemove", function (e) {
-    var li = e.target.closest("li");
-    if (!li || !li.parentNode) return;
-    var idx = Array.prototype.indexOf.call(el("paletteList").children, li);
-    if (idx >= 0 && idx !== palIndex) { palIndex = idx; palRender(); }
-  });
-  el("paletteList").addEventListener("click", function () { setTimeout(palClose, 0); });
-
   document.addEventListener("keydown", function (e) {
-    var open = el("paletteScrim").classList.contains("open");
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      open ? palClose() : palOpen();
-      return;
-    }
-    if (e.key === "Escape" && menuOpen) { e.preventDefault(); closeMenu(); return; }
-    if (!open) return;
-    if (e.key === "Escape") { e.preventDefault(); palClose(); }
-    else if (e.key === "ArrowDown") { e.preventDefault(); palIndex = Math.min(palIndex + 1, palMatches.length - 1); palRender(); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); palIndex = Math.max(palIndex - 1, 0); palRender(); }
-    else if (e.key === "Enter") { e.preventDefault(); palGo(); }
+    if (e.key === "Escape" && menuOpen) { e.preventDefault(); closeMenu(); }
   });
-
-  var motionOn = !reduceMotion;
-  el("motionBtn").textContent = motionOn ? "motion on" : "motion off";
-  el("motionBtn").setAttribute("aria-pressed", motionOn ? "true" : "false");
-  el("motionBtn").addEventListener("click", function () {
-    motionOn = !motionOn;
-    reduceMotion = !motionOn;
-    this.textContent = motionOn ? "motion on" : "motion off";
-    this.setAttribute("aria-pressed", motionOn ? "true" : "false");
-    var lab = el("lab");
-    if (lab) {
-      lab.classList.toggle("paused", !motionOn);
-      labState.running = motionOn;
-      var pb = el("labPause");
-      if (pb) pb.textContent = motionOn ? "pause signal" : "resume signal";
-    }
-  });
-
-  function clock() {
-    var d = new Date();
-    el("sbClock").textContent =
-      String(d.getHours()).padStart(2, "0") + ":" +
-      String(d.getMinutes()).padStart(2, "0") + ":" +
-      String(d.getSeconds()).padStart(2, "0");
-  }
-  clock();
-  setInterval(clock, 1000);
 
   if (staticIntro) document.body.classList.add("static-intro");
   // Reveal animations are opt-in, so the page renders fully without JS.
