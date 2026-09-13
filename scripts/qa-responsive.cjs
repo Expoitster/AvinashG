@@ -184,7 +184,9 @@ function audit(isTouch) {
       if (!menu.closed) fail(d.name, "menu", "drawer did not close");
     }
 
-    // latency lab responds to taps
+    // latency lab responds to taps (now on the Chat360 case study)
+    await page.evaluate(() => { location.hash = "#/work/chat360"; });
+    await page.waitForTimeout(800);
     const lab = await page.evaluate(async () => {
       const before = document.getElementById("labTotal").textContent;
       document.getElementById("labAll").click();
@@ -201,6 +203,8 @@ function audit(isTouch) {
     if (!/100/.test(lab.reset)) fail(d.name, "lab", "reset did not restore baseline");
 
     // capability map selects by tap, and wires only on wide screens
+    await page.evaluate(() => { location.hash = "#/"; });
+    await page.waitForTimeout(800);
     const map = await page.evaluate(async () => {
       const n = document.querySelector('.sysnode[data-p="chat360"]');
       if (!n) return { err: "no map node" };
