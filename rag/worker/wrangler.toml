@@ -5,8 +5,8 @@ compatibility_date = "2025-01-01"
 # Origins allowed to call this Worker. Add the Claude preview origin here
 # while testing, then narrow to just the GitHub Pages origin before launch.
 [vars]
-ALLOWED_ORIGINS = "https://expoitster.github.io,http://localhost:8080"
+ALLOWED_ORIGINS = "https://expoitster.github.io,http://localhost:8080,http://localhost:8081"
 EMBED_MODEL = "gemini-embedding-001"
-CHAT_MODEL = "gemini-flash-latest"
+CHAT_MODEL = "gemini-3.5-flash-lite"
 
 # Set with: wrangler secret put GEMINI_API_KEY

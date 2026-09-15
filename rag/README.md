@@ -85,11 +85,36 @@ here touches `main` or the deployed site — the Worker is a separate piece of
 infrastructure until the chat widget is built and wired to it, and that only
 ships when you say so.
 
+## Wiring the site to the deployed Worker
+
+`design/avinash-console.html` holds the endpoint in one constant:
+
+```js
+var RAG_ENDPOINT = "";
+```
+
+Paste the deployed `https://avinashg-rag.<subdomain>.workers.dev/api/chat` URL
+there, then rebuild with `node scripts/build-site.mjs`.
+
+For testing before that constant is set, any page load accepts
+`?api=<worker url>` and remembers it for the tab — so a freshly deployed
+Worker can be exercised against the real site without a rebuild.
+
+## Model choice
+
+`CHAT_MODEL` is pinned to `gemini-3.5-flash-lite`: benchmarking the
+alternatives against this key, it answered in ~0.6s where `gemini-flash-latest`
+took 1-3s and repeatedly returned 503 "high demand" (which is also why the
+Worker retries transient 429/5xx before giving up). Any model from
+`GET /v1beta/models` works — swap the var and redeploy.
+
 ## Status
 
-- [x] Retrieval + generation Worker
-- [x] Offline index builder (site content; PDFs plug in via `rag/sources/`)
-- [ ] Gemini key generated and stored as a Worker secret — **your step**
-- [ ] Worker deployed to Cloudflare — **your step, or hand me a Wrangler API token and I'll run it**
+- [x] Retrieval + generation Worker, tested end-to-end against live Gemini
+- [x] Offline index builder (37 chunks from the rendered site)
+- [x] Ask bar + chat popup, verified on desktop and phone
+- [x] Full responsive suite green (10 devices x 14 routes)
+- [ ] Worker deployed to Cloudflare — **your step**; `api.cloudflare.com` is
+      blocked from the agent sandbox, so the deploy has to run from your machine
+- [ ] `RAG_ENDPOINT` set to the deployed URL
 - [ ] PDFs added to `rag/sources/`
-- [ ] Chat widget UI (waiting on your direction per your last message)

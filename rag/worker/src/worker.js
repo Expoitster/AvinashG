@@ -81,19 +81,39 @@ export default {
       return json(
         {
           answer,
-          sources: matches.map((m) => ({ title: m.title, route: m.source }))
+          // Several chunks often come from one page; the visitor only needs the page once.
+          sources: dedupeSources(matches)
         },
         200,
         cors
       );
     } catch (err) {
-      return json({ error: "Something went wrong answering that.", detail: String(err) }, 502, cors);
+      // Upstream detail can name models and internals, so it stays in the logs.
+      console.error("chat failed:", String(err));
+      return json({ error: "That did not go through — try again in a moment." }, 502, cors);
     }
   }
 };
 
+/**
+ * Gemini returns 503 "high demand" often enough that a single attempt makes
+ * the chat look broken to a visitor. Retries only the transient statuses;
+ * a 400/403 is a real fault and fails immediately.
+ */
+async function fetchWithRetry(url, init, attempts = 3) {
+  let last;
+  for (let i = 0; i < attempts; i++) {
+    const res = await fetch(url, init);
+    if (res.ok) return res;
+    last = res;
+    if (![429, 500, 502, 503, 504].includes(res.status)) break;
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, 400 * 2 ** i));
+  }
+  return last;
+}
+
 async function embed(text, env) {
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/${env.EMBED_MODEL}:embedContent?key=${env.GEMINI_API_KEY}`,
     {
       method: "POST",
@@ -114,6 +134,17 @@ async function embed(text, env) {
 function l2norm(vec) {
   const mag = Math.sqrt(vec.reduce((s, v) => s + v * v, 0)) || 1;
   return vec.map((v) => v / mag);
+}
+
+function dedupeSources(matches) {
+  const seen = new Set();
+  const out = [];
+  for (const m of matches) {
+    if (seen.has(m.source)) continue;
+    seen.add(m.source);
+    out.push({ title: m.title, route: m.source });
+  }
+  return out;
 }
 
 function topMatches(queryVec, chunks, k) {
@@ -144,7 +175,7 @@ async function generate({ question, context, history, env }) {
     parts: [{ text: `Context passages:\n\n${context}\n\nVisitor question: ${question}` }]
   });
 
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://generativelanguage.googleapis.com/v1beta/models/${env.CHAT_MODEL}:generateContent?key=${env.GEMINI_API_KEY}`,
     {
       method: "POST",

@@ -1547,9 +1547,221 @@
     .reach { flex: 1 1 100%; }
   }
 
+  /* ---------- ask bar + chat ---------- */
+  .ask { padding: clamp(30px, 5vh, 52px) 0 0; }
+  /* the ask bar opens the page, so the hero below it keeps its seamless edge */
+  .ask + .hero { border-top: 0; padding-top: clamp(30px, 5vh, 52px); }
+  .ask-label {
+    font-family: var(--f-mono);
+    font-size: .72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim-2);
+  }
+  .ask-form {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .ask-field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 0 16px;
+    min-height: 58px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    transition: border-color .22s, background-color .22s;
+  }
+  .ask-field:focus-within { border-color: var(--signal-deep); background: var(--panel-2); }
+  .ask-spark { flex: none; width: 17px; height: 17px; color: var(--signal); }
+  .ask-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--paper);
+    font: inherit;
+    font-size: .98rem;
+  }
+  .ask-input::placeholder { color: var(--dim-2); }
+  .ask-send {
+    flex: none;
+    min-height: 58px;
+    padding: 0 22px;
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--ground);
+    background: var(--signal);
+    border: 1px solid var(--signal);
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .ask-send:hover { opacity: .88; }
+  .ask-send:disabled { opacity: .45; cursor: default; }
+  .ask-hint { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .ask-chip {
+    padding: 8px 13px;
+    min-height: 38px;
+    font: inherit;
+    font-size: .83rem;
+    color: var(--dim);
+    background: transparent;
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    transition: color .2s, border-color .2s;
+  }
+  .ask-chip:hover { color: var(--signal); border-color: var(--signal-deep); }
+  .ask-resume { color: var(--signal); border-color: var(--signal-deep); background: rgba(255,176,58,.08); }
+
+  /* chat popup */
+  .chat-scrim {
+    position: fixed; inset: 0; z-index: 72;
+    background: rgba(6,10,16,.88);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: clamp(0px, 4vh, 48px) clamp(0px, 4vw, 48px);
+  }
+  .chat-scrim[hidden] { display: none; }
+  .chat {
+    width: min(760px, 100%);
+    display: flex;
+    flex-direction: column;
+    background: var(--ground-2);
+    border: 1px solid var(--rule-2);
+    overflow: hidden;
+  }
+  .chat-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; padding: 18px 20px; border-bottom: 1px solid var(--rule);
+  }
+  .chat-title { font-family: var(--f-display); font-size: 1.08rem; font-weight: 600; }
+  .chat-sub { margin-top: 4px; font-size: .8rem; color: var(--dim-2); }
+  .chat-tools { display: flex; gap: 8px; flex: none; }
+  .chat-btn {
+    min-height: 44px; padding: 0 13px;
+    display: grid; place-items: center;
+    background: transparent; border: 1px solid var(--rule);
+    color: var(--dim); font: inherit; font-size: .83rem; cursor: pointer;
+    transition: color .2s, border-color .2s;
+  }
+  .chat-btn:hover { color: var(--signal); border-color: var(--signal-deep); }
+  .chat-close { width: 44px; padding: 0; color: var(--paper); font-size: 1rem; }
+
+  .chat-log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .msg { max-width: 88%; }
+  .msg-you { align-self: flex-end; }
+  .msg-bot { align-self: flex-start; }
+  .msg-who {
+    font-family: var(--f-mono);
+    font-size: .68rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--dim-2);
+    margin-bottom: 6px;
+  }
+  .msg-you .msg-who { text-align: right; }
+  .msg-text {
+    padding: 13px 15px;
+    font-size: .93rem;
+    line-height: 1.62;
+    border: 1px solid var(--rule);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .msg-you .msg-text { background: var(--panel-2); border-color: var(--rule-2); }
+  .msg-bot .msg-text { background: var(--panel); }
+  .msg-text strong { color: var(--paper); font-weight: 600; }
+  .msg-list { margin: 8px 0 0; padding-left: 18px; }
+  .msg-list li { margin-top: 6px; }
+  .msg-list li::marker { color: var(--dim-2); }
+  .msg-src { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 7px; }
+  .msg-src a {
+    font-family: var(--f-mono);
+    font-size: .71rem;
+    color: var(--dim-2);
+    padding: 4px 9px;
+    border: 1px solid var(--rule);
+    text-decoration: none;
+    transition: color .2s, border-color .2s;
+  }
+  .msg-src a:hover { color: var(--signal); border-color: var(--signal-deep); }
+  .msg-doc {
+    font-family: var(--f-mono);
+    font-size: .71rem;
+    color: var(--dim-2);
+    padding: 4px 9px;
+    border: 1px dashed var(--rule);
+  }
+  .msg-err .msg-text { border-color: var(--signal-deep); color: var(--signal); }
+
+  .chat-typing { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
+  .chat-typing i {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--dim-2);
+    animation: chatdot 1.25s ease-in-out infinite;
+  }
+  .chat-typing i:nth-child(2) { animation-delay: .16s; }
+  .chat-typing i:nth-child(3) { animation-delay: .32s; }
+  @keyframes chatdot {
+    0%, 60%, 100% { opacity: .28; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+  }
+
+  .chat-foot { border-top: 1px solid var(--rule); padding: 14px 20px 16px; }
+  .chat-form { display: flex; gap: 10px; align-items: stretch; }
+  .chat-input {
+    flex: 1; min-width: 0;
+    padding: 0 14px; min-height: 50px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    color: var(--paper); font: inherit; font-size: .93rem;
+    outline: 0;
+    transition: border-color .22s;
+  }
+  .chat-input:focus { border-color: var(--signal-deep); }
+  .chat-input::placeholder { color: var(--dim-2); }
+  .chat-send {
+    flex: none; min-height: 50px; padding: 0 18px;
+    font: inherit; font-size: .9rem; font-weight: 600;
+    color: var(--ground); background: var(--signal);
+    border: 1px solid var(--signal); cursor: pointer;
+    transition: opacity .2s;
+  }
+  .chat-send:hover { opacity: .88; }
+  .chat-send:disabled { opacity: .45; cursor: default; }
+  .chat-note {
+    margin-top: 10px;
+    font-size: .74rem;
+    color: var(--dim-2);
+    line-height: 1.5;
+  }
+
   @media (max-width: 620px) {
     /* the console status bar is a desktop affordance; it only steals height here */
     body { padding-bottom: env(safe-area-inset-bottom, 0); }
+
+    .ask-form { flex-wrap: wrap; }
+    .ask-field { flex: 1 1 100%; min-height: 54px; }
+    .ask-send { flex: 1 1 100%; min-height: 50px; }
+    .chat-scrim { padding: 0; }
+    .chat { border: 0; }
+    .msg { max-width: 94%; }
 
     /* stage segment labels stop fitting — a legend below carries them instead */
     .seg span { display: none; }
@@ -1787,6 +1999,30 @@
 <div id="spacer"></div>
 
 <main class="wrap" id="view" tabindex="-1"></main>
+
+<div class="chat-scrim" id="chatScrim" hidden>
+  <div class="chat" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
+    <div class="chat-top">
+      <div>
+        <div class="chat-title" id="chatTitle">Ask about my work</div>
+        <div class="chat-sub">Answers come from this site — nothing invented.</div>
+      </div>
+      <div class="chat-tools">
+        <button class="chat-btn" id="chatClear" type="button">Clear</button>
+        <button class="chat-btn chat-close" id="chatClose" type="button" aria-label="Close chat">✕</button>
+      </div>
+    </div>
+    <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-label="Conversation"></div>
+    <div class="chat-foot">
+      <form class="chat-form" id="chatForm">
+        <input class="chat-input" id="chatInput" type="text" autocomplete="off"
+               placeholder="Ask a follow-up…" aria-label="Your question">
+        <button class="chat-send" id="chatSend" type="submit">Send</button>
+      </form>
+      <p class="chat-note">Kept in this tab only, and cleared when you close it.</p>
+    </div>
+  </div>
+</div>
 
 <div class="gal-scrim" id="galScrim" hidden>
   <div class="gal" role="dialog" aria-modal="true" aria-labelledby="galTitle">
@@ -2873,6 +3109,246 @@
      VIEWS
      ========================================================= */
 
+  /* =========================================================
+     ASK — retrieval-backed chat over this site's own content
+     The endpoint is a Cloudflare Worker (see rag/ in the repo); it holds the
+     model key and does retrieval, so nothing sensitive ships to the browser.
+     ========================================================= */
+
+  var RAG_ENDPOINT = "";
+
+  // Preview escape hatch: ?api=<worker url> lets the site be tested against a
+  // Worker before the endpoint above is baked in. Remembered per tab.
+  (function () {
+    try {
+      var q = new URLSearchParams(window.location.search).get("api");
+      if (q) sessionStorage.setItem("ag.api", q);
+      var saved = sessionStorage.getItem("ag.api");
+      if (saved) RAG_ENDPOINT = saved;
+    } catch (e) { /* storage blocked — fall back to the baked-in endpoint */ }
+  })();
+
+  var ASK_SUGGESTIONS = [
+    "What has he shipped in voice AI?",
+    "What happened at Nosh House?",
+    "How does he approach discovery?"
+  ];
+
+  var chatState = { msgs: [], busy: false, lastFocus: null };
+
+  function chatLoad() {
+    try {
+      var raw = sessionStorage.getItem("ag.chat");
+      if (raw) chatState.msgs = JSON.parse(raw) || [];
+    } catch (e) { chatState.msgs = []; }
+  }
+
+  function chatSave() {
+    try { sessionStorage.setItem("ag.chat", JSON.stringify(chatState.msgs)); }
+    catch (e) { /* private mode or blocked storage: chat still works in-memory */ }
+  }
+
+  function askBar() {
+    // A conversation carried over from earlier in this tab is worth surfacing —
+    // otherwise its only trace is a popup the visitor has no reason to reopen.
+    var chips = chatState.msgs.length
+      ? '<button class="ask-chip ask-resume" type="button" data-resume="1">' +
+          'Continue where you left off (' + chatState.msgs.length + ')</button>'
+      : "";
+
+    chips += ASK_SUGGESTIONS.map(function (s) {
+      return '<button class="ask-chip" type="button" data-ask="' + esc(s) + '">' + esc(s) + '</button>';
+    }).join("");
+
+    return '' +
+      '<section class="ask" data-scene>' +
+        '<div class="rv">' +
+          '<div class="ask-label">Ask this portfolio</div>' +
+          '<form class="ask-form" id="askForm">' +
+            '<div class="ask-field">' +
+              '<svg class="ask-spark" viewBox="0 0 16 16" fill="none" stroke="currentColor" ' +
+                'stroke-width="1.4" aria-hidden="true">' +
+                '<path d="M8 1.6l1.6 4.2 4.2 1.6-4.2 1.6L8 13.2l-1.6-4.2L2.2 7.4l4.2-1.6z"/></svg>' +
+              '<input class="ask-input" id="askInput" type="text" autocomplete="off" ' +
+                'placeholder="Ask anything about my work, experience or travels…" ' +
+                'aria-label="Ask a question about Avinash">' +
+            '</div>' +
+            '<button class="ask-send" type="submit">Ask</button>' +
+          '</form>' +
+          '<div class="ask-hint" id="askHint">' + chips + '</div>' +
+        '</div>' +
+      '</section>';
+  }
+
+  function chatOpen() {
+    chatState.lastFocus = document.activeElement;
+    el("chatScrim").hidden = false;
+    document.body.classList.add("menu-open");
+    chatRender();
+    el("chatInput").focus();
+  }
+
+  function chatClose() {
+    el("chatScrim").hidden = true;
+    document.body.classList.remove("menu-open");
+    if (chatState.lastFocus && chatState.lastFocus.focus) chatState.lastFocus.focus();
+  }
+
+  /* The model answers in light markdown. Escape first, then promote only bold
+     and bullets — so the output is formatted without ever trusting the string. */
+  function mdLite(text) {
+    var safe = esc(text);
+    var lines = safe.split("\n");
+    var out = "";
+    var inList = false;
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var bullet = line.match(/^\s*[*-]\s+(.*)$/);
+      if (bullet) {
+        if (!inList) { out += "<ul class='msg-list'>"; inList = true; }
+        out += "<li>" + bullet[1] + "</li>";
+      } else {
+        if (inList) { out += "</ul>"; inList = false; }
+        out += line + "\n";
+      }
+    }
+    if (inList) out += "</ul>";
+
+    return out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").trim();
+  }
+
+  function chatRender() {
+    var log = el("chatLog");
+    var html = chatState.msgs.map(function (m) {
+      // Page sources navigate; document sources (indexed PDFs) have nowhere to go.
+      var src = (m.sources || []).length
+        ? '<div class="msg-src">' + m.sources.map(function (s) {
+            var route = String(s.route || "");
+            return route.charAt(0) === "#"
+              ? '<a href="' + esc(route) + '">' + esc(s.title) + '</a>'
+              : '<span class="msg-doc">' + esc(s.title) + '</span>';
+          }).join("") + '</div>'
+        : "";
+      return '<div class="msg msg-' + (m.role === "user" ? "you" : "bot") +
+        (m.error ? " msg-err" : "") + '">' +
+        '<div class="msg-who">' + (m.role === "user" ? "you" : "portfolio") + '</div>' +
+        '<div class="msg-text">' +
+          (m.role === "user" ? esc(m.text) : mdLite(m.text)) + src +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    if (chatState.busy) {
+      html += '<div class="msg msg-bot"><div class="msg-who">portfolio</div>' +
+        '<div class="chat-typing"><i></i><i></i><i></i></div></div>';
+    }
+
+    log.innerHTML = html;
+    log.scrollTop = log.scrollHeight;
+    el("chatSend").disabled = chatState.busy;
+  }
+
+  function chatPush(msg) {
+    chatState.msgs.push(msg);
+    chatSave();
+    chatRender();
+    askSyncResume();
+  }
+
+  /* Keeps the resume chip on the ask bar in step with the stored conversation. */
+  function askSyncResume() {
+    var hint = el("askHint");
+    if (!hint) return;
+    var chip = hint.querySelector("[data-resume]");
+    if (!chatState.msgs.length) {
+      if (chip) chip.remove();
+      return;
+    }
+    var label = "Continue where you left off (" + chatState.msgs.length + ")";
+    if (chip) { chip.textContent = label; return; }
+    var b = document.createElement("button");
+    b.className = "ask-chip ask-resume";
+    b.type = "button";
+    b.setAttribute("data-resume", "1");
+    b.textContent = label;
+    hint.insertBefore(b, hint.firstChild);
+  }
+
+  function chatAsk(question) {
+    question = String(question || "").trim();
+    if (!question || chatState.busy) return;
+
+    chatPush({ role: "user", text: question });
+
+    if (!RAG_ENDPOINT) {
+      chatPush({
+        role: "model",
+        error: true,
+        text: "The assistant is not connected yet. In the meantime, the answer is " +
+              "almost certainly somewhere on this site — or reach me directly from the contact section."
+      });
+      return;
+    }
+
+    chatState.busy = true;
+    chatRender();
+
+    // Only prior turns go up as history; the current question is sent separately.
+    var history = chatState.msgs.slice(0, -1).filter(function (m) { return !m.error; })
+      .slice(-6).map(function (m) { return { role: m.role, text: m.text }; });
+
+    fetch(RAG_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: question, history: history })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+      .then(function (res) {
+        chatState.busy = false;
+        if (!res.ok || !res.data || !res.data.answer) {
+          chatPush({
+            role: "model",
+            error: true,
+            text: (res.data && res.data.error) || "That did not go through. Try again in a moment."
+          });
+          return;
+        }
+        chatPush({ role: "model", text: res.data.answer, sources: res.data.sources || [] });
+      })
+      .catch(function () {
+        chatState.busy = false;
+        chatPush({
+          role: "model",
+          error: true,
+          text: "I could not reach the assistant — check your connection and try again."
+        });
+      });
+  }
+
+  function askBind() {
+    var form = el("askForm");
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var input = el("askInput");
+      var q = input.value;
+      if (!q.trim()) return;
+      input.value = "";
+      chatOpen();
+      chatAsk(q);
+    });
+
+    el("askHint").addEventListener("click", function (e) {
+      if (e.target.closest("[data-resume]")) { chatOpen(); return; }
+      var b = e.target.closest("[data-ask]");
+      if (!b) return;
+      chatOpen();
+      chatAsk(b.getAttribute("data-ask"));
+    });
+  }
+
   function viewHome() {
     var results = RESULT_CARDS.map(function (c, i) {
       var figs = c.figures.map(function (f) {
@@ -2931,6 +3407,8 @@
     }).join("");
 
     return '' +
+      askBar() +
+
       '<section class="hero" data-scene>' +
         '<h1 class="rv">AI product manager. Currently shipping, travelling and building in the open.</h1>' +
         '<p class="lede rv" style="--i:1">What I have been doing lately \u2014 this list keeps moving.</p>' +
@@ -3662,7 +4140,7 @@
     }
     closeMenu();
 
-    if (isHome) bindMap();
+    if (isHome) { bindMap(); askBind(); }
     // the lab now lives on the Chat360 case study, so bind it wherever it rendered
     if (el("lab")) labBind();
 
@@ -4119,6 +4597,31 @@
   el("navClose").addEventListener("click", closeMenu);
   el("navScrim").addEventListener("click", closeMenu);
 
+  chatLoad();
+  el("chatClose").addEventListener("click", chatClose);
+  el("chatScrim").addEventListener("click", function (e) {
+    if (e.target === el("chatScrim")) chatClose();
+  });
+  el("chatClear").addEventListener("click", function () {
+    chatState.msgs = [];
+    chatSave();
+    chatRender();
+    askSyncResume();
+    el("chatInput").focus();
+  });
+  el("chatForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var input = el("chatInput");
+    var q = input.value;
+    if (!q.trim()) return;
+    input.value = "";
+    chatAsk(q);
+  });
+  // A source link navigates the page underneath, so the dialog has to get out of the way.
+  el("chatLog").addEventListener("click", function (e) {
+    if (e.target.closest(".msg-src a")) chatClose();
+  });
+
   el("galClose").addEventListener("click", galClose);
   el("galScrim").addEventListener("click", function (e) {
     if (e.target === el("galScrim")) galClose();
@@ -4133,6 +4636,7 @@
   document.addEventListener("keydown", function (e) {
     var galOpenNow = !el("galScrim").hidden;
     if (e.key === "Escape") {
+      if (!el("chatScrim").hidden) { e.preventDefault(); chatClose(); return; }
       if (galOpenNow) { e.preventDefault(); galClose(); return; }
       if (menuOpen) { e.preventDefault(); closeMenu(); return; }
     }
