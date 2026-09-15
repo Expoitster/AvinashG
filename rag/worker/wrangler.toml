@@ -1,0 +1,12 @@
+name = "avinashg-rag"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+# Origins allowed to call this Worker. Add the Claude preview origin here
+# while testing, then narrow to just the GitHub Pages origin before launch.
+[vars]
+ALLOWED_ORIGINS = "https://expoitster.github.io,http://localhost:8080"
+EMBED_MODEL = "text-embedding-004"
+CHAT_MODEL = "gemini-2.0-flash"
+
+# Set with: wrangler secret put GEMINI_API_KEY

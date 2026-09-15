@@ -42,3 +42,11 @@ next-env.d.ts
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# RAG: generated embeddings index (rebuild with rag/scripts/build-rag-index.mjs)
+# and raw source docs (PDFs / extracted text) staged for indexing.
+/rag/worker/src/index-data.json
+/rag/sources/
+!/rag/sources/.gitkeep
+/rag/worker/.wrangler/
+/rag/worker/node_modules/
