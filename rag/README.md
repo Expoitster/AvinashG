@@ -20,7 +20,33 @@ Your Gemini key only ever lives in two places: your shell environment when
 you run the build script, and a Cloudflare secret the Worker reads at
 runtime. It's never in a committed file or in any browser-side code.
 
-## One-time setup
+## Deploying with no terminal (phone / tablet, browser only)
+
+Everything below this section assumes a terminal (`wrangler` CLI). If you're
+deploying from a phone or tablet, use the Cloudflare **dashboard's own code
+editor** instead — no npm, no CLI, no laptop:
+
+1. **Get a Gemini API key** — [aistudio.google.com](https://aistudio.google.com) → *Get API key* (works fine in a mobile browser).
+2. **dash.cloudflare.com** → log in → **Workers & Pages** → **Create** → **Workers** → give it a name (e.g. `avinashg-rag`) → **Deploy** (this deploys Cloudflare's placeholder "Hello World" first — that's expected, next step replaces it).
+3. Open the new Worker → **Edit code** (the built-in "Quick Edit" browser editor).
+4. Replace *all* of its contents with `rag/worker/dist/worker.bundle.js` — this is a build I generate that inlines the whole embeddings index into one file, since the dashboard editor can't resolve a separate `index-data.json` import the way the CLI can. I'll hand you this file directly; paste it in whole.
+5. Click **Save and deploy**.
+6. Still in that Worker: **Settings** → **Variables and Secrets** → **Add** → name `GEMINI_API_KEY`, type **Secret**, paste your key → **Save and deploy**.
+7. The Worker's URL is shown at the top of its dashboard page (`https://avinashg-rag.<your-subdomain>.workers.dev`) — send me that and I'll wire it into the site.
+
+Regenerate the paste-in file after any Worker code or content change:
+```
+node rag/scripts/bundle-worker.mjs
+```
+(needs `rag/worker/src/index-data.json` to already exist — see *Build the
+index* below.) This whole path was tested end-to-end locally before being
+written down here — see the commit this file shipped in.
+
+---
+
+## One-time setup (terminal / `wrangler` path)
+
+Skip this whole section if you used the dashboard path above.
 
 1. **Get a Gemini API key** — [aistudio.google.com](https://aistudio.google.com) → *Get API key*. Free tier is enough for this.
 2. **Log in to Cloudflare** (once, from this machine or yours):

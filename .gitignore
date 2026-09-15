@@ -51,3 +51,4 @@ next-env.d.ts
 /rag/worker/.wrangler/
 /rag/worker/node_modules/
 /rag/worker/.dev.vars
+/rag/worker/dist/
