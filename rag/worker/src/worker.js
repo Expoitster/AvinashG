@@ -101,13 +101,19 @@ async function embed(text, env) {
       body: JSON.stringify({
         model: `models/${env.EMBED_MODEL}`,
         content: { parts: [{ text }] },
-        taskType: "RETRIEVAL_QUERY"
+        taskType: "RETRIEVAL_QUERY",
+        outputDimensionality: 768 // must match rag/scripts/build-rag-index.mjs's EMBED_DIM
       })
     }
   );
   if (!res.ok) throw new Error(`embed failed: ${res.status} ${await res.text()}`);
   const data = await res.json();
-  return data.embedding.values;
+  return l2norm(data.embedding.values);
+}
+
+function l2norm(vec) {
+  const mag = Math.sqrt(vec.reduce((s, v) => s + v * v, 0)) || 1;
+  return vec.map((v) => v / mag);
 }
 
 function topMatches(queryVec, chunks, k) {
@@ -146,7 +152,7 @@ async function generate({ question, context, history, env }) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents,
-        generationConfig: { temperature: 0.3, maxOutputTokens: 512 }
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
       })
     }
   );

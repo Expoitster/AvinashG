@@ -6,7 +6,7 @@ compatibility_date = "2025-01-01"
 # while testing, then narrow to just the GitHub Pages origin before launch.
 [vars]
 ALLOWED_ORIGINS = "https://expoitster.github.io,http://localhost:8080"
-EMBED_MODEL = "text-embedding-004"
-CHAT_MODEL = "gemini-2.0-flash"
+EMBED_MODEL = "gemini-embedding-001"
+CHAT_MODEL = "gemini-flash-latest"
 
 # Set with: wrangler secret put GEMINI_API_KEY

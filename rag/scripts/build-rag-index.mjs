@@ -24,7 +24,8 @@ const SOURCES_DIR = resolve(root, "rag/sources");
 const OUT = resolve(root, "rag/worker/src/index-data.json");
 
 const DRY_RUN = process.argv.includes("--dry-run");
-const EMBED_MODEL = "text-embedding-004";
+const EMBED_MODEL = "gemini-embedding-001";
+const EMBED_DIM = 768; // Matryoshka truncation: keeps index small; must match worker.js's request
 const API_KEY = process.env.GEMINI_API_KEY;
 
 if (!DRY_RUN && !API_KEY) {
@@ -130,13 +131,19 @@ async function embed(text) {
       body: JSON.stringify({
         model: `models/${EMBED_MODEL}`,
         content: { parts: [{ text }] },
-        taskType: "RETRIEVAL_DOCUMENT"
+        taskType: "RETRIEVAL_DOCUMENT",
+        outputDimensionality: EMBED_DIM
       })
     }
   );
   if (!res.ok) throw new Error(`embed failed: ${res.status} ${await res.text()}`);
   const data = await res.json();
-  return data.embedding.values;
+  return l2norm(data.embedding.values);
+}
+
+function l2norm(vec) {
+  const mag = Math.sqrt(vec.reduce((s, v) => s + v * v, 0)) || 1;
+  return vec.map((v) => v / mag);
 }
 
 async function main() {
@@ -158,7 +165,7 @@ async function main() {
   console.log("Embedding chunks with Gemini...");
   const out = [];
   for (const c of allChunks) {
-    const embedding = await embed(c.text);
+    const embedding = (await embed(c.text)).map((v) => Math.round(v * 1e5) / 1e5);
     out.push({ ...c, embedding });
     process.stdout.write(".");
   }
