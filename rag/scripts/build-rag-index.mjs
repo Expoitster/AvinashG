@@ -165,7 +165,9 @@ async function main() {
   console.log("Embedding chunks with Gemini...");
   const out = [];
   for (const c of allChunks) {
-    const embedding = (await embed(c.text)).map((v) => Math.round(v * 1e5) / 1e5);
+    // 3 decimals: cuts the bundle ~25% over 5, with no measurable retrieval-quality
+    // loss at this corpus size — verified by re-running real queries after rounding.
+    const embedding = (await embed(c.text)).map((v) => Math.round(v * 1e3) / 1e3);
     out.push({ ...c, embedding });
     process.stdout.write(".");
   }
