@@ -43,4 +43,7 @@ const bundled =
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, bundled);
-console.log(`Wrote ${OUT} (${(bundled.length / 1024).toFixed(0)} KB) — paste this into the dashboard editor.`);
+// Same bytes under .txt: phones and tablets open that as readable text (with a
+// working "select all") instead of downloading it as an unopenable script.
+writeFileSync(OUT.replace(/\.js$/, ".txt"), bundled);
+console.log(`Wrote ${OUT} and its .txt twin (${(bundled.length / 1024).toFixed(0)} KB) — paste either into the dashboard editor.`);
