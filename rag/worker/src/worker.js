@@ -42,6 +42,8 @@ export default {
     };
     const origin = request.headers.get("Origin") || "";
     const allowed = (env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim());
+    // The Worker's own origin, so the built-in test page below can call /api/chat.
+    allowed.push(new URL(request.url).origin);
     const corsOrigin = allowed.includes(origin) ? origin : allowed[0] || "";
 
     const cors = {
@@ -56,6 +58,25 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // A self-served tester, so the backend can be exercised from any browser
+    // before a site is wired to it — and afterwards as a health check.
+    if (url.pathname === "/" && request.method === "GET") {
+      return new Response(TEST_PAGE, {
+        status: 200,
+        headers: { ...cors, "Content-Type": "text/html; charset=utf-8" }
+      });
+    }
+
+    // Reports whether the secret is set without ever revealing it.
+    if (url.pathname === "/api/health") {
+      return json(
+        { ok: true, keyConfigured: !!env.GEMINI_API_KEY, chunks: indexData.length, chatModel: env.CHAT_MODEL },
+        200,
+        cors
+      );
+    }
+
     if (url.pathname !== "/api/chat" || request.method !== "POST") {
       return new Response("Not found", { status: 404, headers: cors });
     }
@@ -205,6 +226,109 @@ async function generate({ question, context, history, env }) {
   const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "";
   return text.trim() || "I couldn't put together an answer to that — try rephrasing, or reach Avinash directly through the contact section.";
 }
+
+const TEST_PAGE = `<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAG backend test</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; padding: 20px 16px 40px;
+    background: #101722; color: #EDE8DC;
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 1.2rem; margin: 0 0 4px; }
+  .sub { color: #64748E; font-size: .85rem; margin-bottom: 20px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; }
+  input {
+    flex: 1 1 220px; min-height: 48px; padding: 0 14px;
+    background: #16202E; border: 1px solid #26364E; color: #EDE8DC;
+    font: inherit; font-size: .95rem; border-radius: 0; outline: 0;
+  }
+  input:focus { border-color: #7A5316; }
+  button {
+    min-height: 48px; padding: 0 20px; font: inherit; font-weight: 600;
+    background: #FFB03A; color: #101722; border: 0; cursor: pointer;
+  }
+  button:disabled { opacity: .5; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    padding: 8px 12px; font-size: .82rem; background: transparent;
+    color: #93A2BC; border: 1px solid #26364E; cursor: pointer; min-height: 38px;
+  }
+  #out { margin-top: 22px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .box { padding: 14px 16px; border: 1px solid #26364E; background: #16202E; margin-top: 12px; }
+  .err { border-color: #7A5316; color: #FFB03A; }
+  .src { margin-top: 10px; font-size: .78rem; color: #64748E; }
+  .ok { color: #79E0A8; }
+</style>
+</head><body><div class="wrap">
+<h1>RAG backend test</h1>
+<div class="sub" id="status">Checking configuration&hellip;</div>
+<form id="f">
+  <input id="q" placeholder="Ask something about Avinash&hellip;" autocomplete="off">
+  <button id="b" type="submit">Ask</button>
+</form>
+<div class="chips">
+  <button class="chip" type="button">What did he do at Chat360?</button>
+  <button class="chip" type="button">What happened at Nosh House?</button>
+  <button class="chip" type="button">What is his favourite colour?</button>
+</div>
+<div id="out"></div>
+</div>
+<script>
+  var out = document.getElementById("out");
+  var btn = document.getElementById("b");
+
+  fetch("/api/health").then(function (r) { return r.json(); }).then(function (d) {
+    document.getElementById("status").innerHTML = d.keyConfigured
+      ? '<span class="ok">Worker live \\u00b7 ' + d.chunks + ' chunks indexed \\u00b7 API key set</span>'
+      : '<span style="color:#FFB03A">Worker live, but GEMINI_API_KEY is NOT set \\u2014 add it under Settings \\u2192 Variables and Secrets</span>';
+  }).catch(function () {
+    document.getElementById("status").textContent = "Could not reach /api/health.";
+  });
+
+  function ask(q) {
+    if (!q.trim()) return;
+    btn.disabled = true;
+    out.innerHTML = '<div class="box">Thinking\\u2026</div>';
+    fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: q })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        btn.disabled = false;
+        if (!res.ok || !res.d.answer) {
+          out.innerHTML = '<div class="box err">' + (res.d.error || "Request failed") + '</div>';
+          return;
+        }
+        var srcs = (res.d.sources || []).map(function (s) { return s.title; }).join("  \\u00b7  ");
+        out.innerHTML = '<div class="box">' + res.d.answer +
+          (srcs ? '<div class="src">sources: ' + srcs + '</div>' : '') + '</div>';
+      })
+      .catch(function (e) {
+        btn.disabled = false;
+        out.innerHTML = '<div class="box err">' + e + '</div>';
+      });
+  }
+
+  document.getElementById("f").addEventListener("submit", function (e) {
+    e.preventDefault();
+    ask(document.getElementById("q").value);
+  });
+  document.querySelector(".chips").addEventListener("click", function (e) {
+    if (e.target.classList.contains("chip")) {
+      document.getElementById("q").value = e.target.textContent;
+      ask(e.target.textContent);
+    }
+  });
+</script>
+</body></html>`;
 
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), {
