@@ -149,7 +149,14 @@ function audit(isTouch) {
     for (const route of ROUTES) {
       await page.evaluate((h) => { location.hash = h; }, route);
       await page.waitForTimeout(500);
-      await page.evaluate(() => window.scrollTo(0, Math.min(400, document.body.scrollHeight)));
+      // On the overview the intro renders the page scaled down inside the
+      // monitor, so anything measured before the spacer is spent reports the
+      // preview's dimensions, not the layout's. Clear the runway first.
+      await page.evaluate(() => {
+        const sp = document.getElementById("spacer");
+        const past = sp && sp.offsetHeight ? sp.offsetHeight + 400 : 400;
+        window.scrollTo(0, Math.min(past, document.body.scrollHeight));
+      });
       // reveals run 620ms plus up to 225ms of stagger; wait past that so the
       // audit measures settled state rather than a mid-transition frame
       await page.waitForTimeout(1200);
@@ -237,7 +244,12 @@ function audit(isTouch) {
     // every external product link is present, safe and correctly targeted
     const links = await page.evaluate(async () => {
       location.hash = "#/";
-      await new Promise((r) => setTimeout(r, 900));
+      await new Promise((r) => setTimeout(r, 500));
+      // Returning to the overview rewinds to the intro, which renders the page
+      // as a thumbnail on the monitor; measure past it or every box is scaled.
+      const sp = document.getElementById("spacer");
+      window.scrollTo(0, (sp && sp.offsetHeight ? sp.offsetHeight : 0) + 400);
+      await new Promise((r) => setTimeout(r, 700));
       const want = ["tragenie.lovable.app", "noshhouse.lovable.app", "blankstore.lovable.app"];
       const ext = [...document.querySelectorAll('a[href^="http"]')];
       const found = want.map((w) => ext.some((a) => a.href.includes(w)));

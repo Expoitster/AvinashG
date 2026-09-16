@@ -242,6 +242,8 @@
     max-width: 1080px;
     margin: 0 auto;
     padding: 0 20px;
+    /* the intro scales this column up out of the monitor screen */
+    transform-origin: 0 0;
   }
 
   section { padding: var(--sec-y) 0; scroll-margin-top: calc(var(--topbar-h) + 20px); }
@@ -807,9 +809,11 @@
   .scene { display: block; width: 100%; height: auto; }
 
   .scroll-cue {
+    /* sits above the monitor, where the eye already is, rather than at the
+       bottom edge where it reads as unrelated page furniture */
     position: absolute;
     left: 50%;
-    bottom: 34px;
+    top: clamp(14px, 7vh, 62px);
     transform: translateX(-50%);
     pointer-events: auto;
     display: flex;
@@ -1710,7 +1714,36 @@
   }
   .msg-err .msg-text { border-color: var(--signal-deep); color: var(--signal); }
 
-  .chat-typing { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
+  /* messages arrive rather than appear */
+  .msg { animation: msgIn .34s cubic-bezier(.16,1,.3,1) both; }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translate3d(0, 10px, 0); }
+    to { opacity: 1; transform: none; }
+  }
+  .msg-caret {
+    display: inline-block;
+    width: 7px; height: 1em;
+    margin-left: 2px;
+    vertical-align: -2px;
+    background: var(--signal);
+    animation: caretBlink .9s steps(2, start) infinite;
+  }
+  @keyframes caretBlink { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
+
+  .msg-src a, .msg-src .msg-doc {
+    animation: srcIn .3s ease both;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+  @keyframes srcIn { from { opacity: 0; transform: translate3d(0, 4px, 0); } to { opacity: 1; transform: none; } }
+
+  .chat-typing { display: flex; gap: 9px; align-items: center; padding: 4px 0; }
+  .chat-typing-dots { display: flex; gap: 5px; align-items: center; }
+  .chat-typing-label {
+    font-family: var(--f-mono);
+    font-size: .72rem;
+    letter-spacing: .06em;
+    color: var(--dim-2);
+  }
   .chat-typing i {
     width: 6px; height: 6px; border-radius: 50%;
     background: var(--dim-2);
@@ -1790,7 +1823,7 @@
     .trace-row { grid-template-columns: 42px 1fr; gap: 12px; }
     .chain { gap: 6px; }
     #spacer.on { height: 150svh; }
-    .scroll-cue { bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+    .scroll-cue { top: calc(10px + env(safe-area-inset-top, 0px)); }
   }
 
   @media (max-width: 380px) {
@@ -1902,9 +1935,9 @@
       <rect x="586" y="418" width="28" height="50" fill="#1C2739"/>
       <rect x="516" y="462" width="168" height="12" rx="6" fill="#22304A"/>
       <rect x="330" y="112" width="540" height="312" rx="9" fill="#111A26" stroke="#33465F" stroke-width="3"/>
-      <rect x="344" y="126" width="512" height="272" rx="4" fill="#080D15"/>
+      <rect id="scrArea" x="344" y="126" width="512" height="272" rx="4" fill="#080D15"/>
 
-      <g clip-path="url(#clipScreen)">
+      <g clip-path="url(#clipScreen)" id="scrText">
         <!-- window chrome -->
         <rect x="344" y="126" width="512" height="28" fill="#131D2B"/>
         <circle cx="362" cy="140" r="4" fill="#FF7A5C"/>
@@ -1971,7 +2004,7 @@
   </div>
 
   <button class="scroll-cue" id="scrollCue" type="button">
-    <span>scroll to enter</span>
+    <span>scroll to know me</span>
     <span class="chev" aria-hidden="true"></span>
   </button>
 </div>
@@ -3128,10 +3161,19 @@
     } catch (e) { /* storage blocked — fall back to the baked-in endpoint */ }
   })();
 
+  /* Cycled through the input's placeholder rather than shown as chips: the
+     range of answerable questions is the thing worth communicating, and a
+     rotating hint does that without three buttons competing with the field
+     they are meant to explain. */
   var ASK_SUGGESTIONS = [
     "What has he shipped in voice AI?",
     "What happened at Nosh House?",
-    "How does he approach discovery?"
+    "How does he approach discovery?",
+    "What did he own at Cordelia Cruises?",
+    "Where has he travelled solo?",
+    "What is he building on his own?",
+    "How does he decide what not to build?",
+    "What does he study, and where?"
   ];
 
   var chatState = { msgs: [], busy: false, lastFocus: null };
@@ -3156,10 +3198,6 @@
           'Continue where you left off (' + chatState.msgs.length + ')</button>'
       : "";
 
-    chips += ASK_SUGGESTIONS.map(function (s) {
-      return '<button class="ask-chip" type="button" data-ask="' + esc(s) + '">' + esc(s) + '</button>';
-    }).join("");
-
     return '' +
       '<section class="ask" data-scene>' +
         '<div class="rv">' +
@@ -3170,7 +3208,7 @@
                 'stroke-width="1.4" aria-hidden="true">' +
                 '<path d="M8 1.6l1.6 4.2 4.2 1.6-4.2 1.6L8 13.2l-1.6-4.2L2.2 7.4l4.2-1.6z"/></svg>' +
               '<input class="ask-input" id="askInput" type="text" autocomplete="off" ' +
-                'placeholder="Ask anything about my work, experience or travels…" ' +
+                'placeholder="' + esc(ASK_SUGGESTIONS[0]) + '" ' +
                 'aria-label="Ask a question about Avinash">' +
             '</div>' +
             '<button class="ask-send" type="submit">Ask</button>' +
@@ -3221,27 +3259,35 @@
   function chatRender() {
     var log = el("chatLog");
     var html = chatState.msgs.map(function (m) {
-      // Page sources navigate; document sources (indexed PDFs) have nowhere to go.
-      var src = (m.sources || []).length
-        ? '<div class="msg-src">' + m.sources.map(function (s) {
+      // Sources land only once the answer has finished revealing, so they
+      // read as a citation of what was just said rather than page furniture.
+      var typing = m.reveal != null && m.reveal < m.text.length;
+      var src = (m.sources || []).length && !typing
+        ? '<div class="msg-src">' + m.sources.map(function (s, si) {
             var route = String(s.route || "");
+            var style = ' style="--i:' + si + '"';
             return route.charAt(0) === "#"
-              ? '<a href="' + esc(route) + '">' + esc(s.title) + '</a>'
-              : '<span class="msg-doc">' + esc(s.title) + '</span>';
+              ? '<a' + style + ' href="' + esc(route) + '">' + esc(s.title) + '</a>'
+              : '<span class="msg-doc"' + style + '>' + esc(s.title) + '</span>';
           }).join("") + '</div>'
         : "";
       return '<div class="msg msg-' + (m.role === "user" ? "you" : "bot") +
         (m.error ? " msg-err" : "") + '">' +
         '<div class="msg-who">' + (m.role === "user" ? "you" : "portfolio") + '</div>' +
         '<div class="msg-text">' +
-          (m.role === "user" ? esc(m.text) : mdLite(m.text)) + src +
+          (m.role === "user"
+            ? esc(m.text)
+            : typing
+              ? esc(m.text.slice(0, m.reveal)) + '<i class="msg-caret"></i>'
+              : mdLite(m.text)) + src +
         '</div>' +
       '</div>';
     }).join("");
 
     if (chatState.busy) {
       html += '<div class="msg msg-bot"><div class="msg-who">portfolio</div>' +
-        '<div class="chat-typing"><i></i><i></i><i></i></div></div>';
+        '<div class="chat-typing"><span class="chat-typing-dots"><i></i><i></i><i></i></span>' +
+        '<span class="chat-typing-label">reading the site</span></div></div>';
     }
 
     log.innerHTML = html;
@@ -3254,6 +3300,37 @@
     chatSave();
     chatRender();
     askSyncResume();
+  }
+
+  /* Reveals a fresh answer progressively. Only ever runs on a just-arrived
+     message — restored history renders complete, so reopening the popup never
+     replays old answers. */
+  function chatReveal(msg) {
+    var reduced = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced || msg.text.length > 1400) { msg.reveal = null; chatRender(); return; }
+
+    msg.reveal = 0;
+    chatRender();
+
+    // Patch the last bubble in place. A full re-render each frame would
+    // restart every message's entry animation 60 times a second.
+    var log = el("chatLog");
+    var node = log.lastElementChild && log.lastElementChild.querySelector(".msg-text");
+    if (!node) { msg.reveal = null; chatRender(); return; }
+
+    var step = Math.max(2, Math.round(msg.text.length / 150));
+    var timer = setInterval(function () {
+      msg.reveal += step;
+      if (msg.reveal >= msg.text.length) {
+        clearInterval(timer);
+        msg.reveal = null; // settled: re-render as formatted markdown with sources
+        chatRender();
+        return;
+      }
+      node.innerHTML = esc(msg.text.slice(0, msg.reveal)) + '<i class="msg-caret"></i>';
+      log.scrollTop = log.scrollHeight;
+    }, 16);
   }
 
   /* Keeps the resume chip on the ask bar in step with the stored conversation. */
@@ -3314,7 +3391,9 @@
           });
           return;
         }
-        chatPush({ role: "model", text: res.data.answer, sources: res.data.sources || [] });
+        var msg = { role: "model", text: res.data.answer, sources: res.data.sources || [] };
+        chatPush(msg);
+        chatReveal(msg);
       })
       .catch(function () {
         chatState.busy = false;
@@ -3326,9 +3405,58 @@
       });
   }
 
+  /* Types each suggestion into the placeholder and clears it again, so the
+     field itself demonstrates what can be asked. Pauses whenever the visitor
+     is actually using the input, and never runs under reduced-motion. */
+  var askRotator = null;
+
+  function askRotate() {
+    if (askRotator) { clearTimeout(askRotator); askRotator = null; }
+    var input = el("askInput");
+    if (!input) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var i = 0, ch = 0, erasing = false;
+
+    function step() {
+      var live = el("askInput");
+      if (!live) { askRotator = null; return; }
+
+      // Hand the field back the moment it is in use.
+      if (live.value || document.activeElement === live) {
+        askRotator = setTimeout(step, 900);
+        return;
+      }
+
+      var text = ASK_SUGGESTIONS[i % ASK_SUGGESTIONS.length];
+      ch += erasing ? -2 : 1;
+
+      if (ch >= text.length) {
+        ch = text.length;
+        erasing = true;
+        live.setAttribute("placeholder", text);
+        askRotator = setTimeout(step, 2100);
+        return;
+      }
+      if (ch <= 0) {
+        ch = 0;
+        erasing = false;
+        i++;
+        askRotator = setTimeout(step, 260);
+        return;
+      }
+
+      live.setAttribute("placeholder", text.slice(0, ch));
+      askRotator = setTimeout(step, erasing ? 18 : 42);
+    }
+
+    askRotator = setTimeout(step, 1400);
+  }
+
   function askBind() {
     var form = el("askForm");
     if (!form) return;
+    askRotate();
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -4272,28 +4400,114 @@
     );
   }
 
+  /* The page does not appear after the desk scene — it appears *inside* the
+     monitor and grows out of it, so the next section is on screen (small, but
+     legible) from the first few pixels of scroll. The old version zoomed the
+     whole scene away and left an empty frame before content arrived, which
+     read as a dead gap with no hint anything was coming.
+
+     The scroll runway is the spacer, so progress and the spacer end together:
+     at p=1 the content sits exactly where normal document flow puts it and the
+     transform is dropped with nothing moving. */
+  function introSpan() {
+    var sp = el("spacer");
+    return Math.max(1, sp ? sp.offsetHeight : M.vh * 1.2);
+  }
+
+  function releaseView() {
+    var view = el("view");
+    if (!view || !view.style.transform) return;
+    view.style.transform = "";
+    view.style.clipPath = "";
+    view.style.willChange = "";
+    view.style.zIndex = "";
+    view.style.opacity = "";
+    view.style.pointerEvents = "";
+    var scrText = el("scrText");
+    if (scrText) scrText.setAttribute("opacity", "1");
+  }
+
   function updateIntro(sy) {
     var stage = el("stage");
     if (!stage || staticIntro) return;
-    if (!stage.classList.contains("live")) return;
+    if (!stage.classList.contains("live")) { releaseView(); return; }
 
-    var p = clamp01(sy / (M.vh * 1.2));
+    var view = el("view");
+    var scr = el("scrArea");
+    var p = clamp01(sy / introSpan());
     var e = smoothstep(p);
 
-    // fly through the screen
-    el("stageInner").style.transform = "scale(" + (1 + e * 5.6).toFixed(4) + ")";
-    var blur = e < 0.18 ? 0 : (e - 0.18) * 5.4;
-    el("stageInner").style.filter = blur > 0.1 ? "blur(" + blur.toFixed(2) + "px)" : "none";
-    stage.style.opacity = (p < 0.6 ? 1 : clamp01(1 - (p - 0.6) / 0.4)).toFixed(3);
+    // A gentle push toward the desk. The old 6.6x fly-through threw the scene
+    // past the viewport; here the monitor stays put and its screen opens up.
+    el("stageInner").style.transform = "scale(" + (1 + e * 0.62).toFixed(4) + ")";
+    el("stageInner").style.filter = "none";
+
+    // Desk art dissolves in step with the content breaking out of the bezel.
+    var fadeFrom = (M.vw || window.innerWidth) < 700 ? 0.3 : 0.55;
+    stage.style.opacity = (p < fadeFrom ? 1 : clamp01(1 - (p - fadeFrom) / 0.42)).toFixed(3);
     stage.style.visibility = p >= 0.999 ? "hidden" : "visible";
 
-    // depth: the person rushes past, the monitor stays the target
-    setLayer("layFore", e * 320, 1 + e * 1.15);
-    setLayer("layDesk", e * 155, 1 + e * 0.5);
-    setLayer("layMid", e * 18, 1 + e * 0.12);
-    setLayer("layBack", e * -55, 1 - e * 0.07);
+    setLayer("layFore", e * 120, 1 + e * 0.30);
+    setLayer("layDesk", e * 62, 1 + e * 0.16);
+    setLayer("layMid", e * 6, 1 + e * 0.04);
+    setLayer("layBack", e * -22, 1 - e * 0.03);
 
-    el("topbar").style.opacity = clamp01((p - 0.52) / 0.33).toFixed(3);
+    if (view && scr) {
+      var r = scr.getBoundingClientRect(); // tracks whatever scale the stage has
+      var vw = M.vw || window.innerWidth;
+      var vh = M.vh || window.innerHeight;
+
+      // Inset a little so the content sits inside the bezel, not flush to it.
+      var pad = r.width * 0.035;
+      var sx = r.left + pad, sty = r.top + pad;
+      var sw = Math.max(1, r.width - pad * 2), sh = Math.max(1, r.height - pad * 2);
+
+      // The content column is a centred max-width block, so the end state is
+      // its own layout box — not the viewport. Landing exactly there is what
+      // lets the transform be dropped at p=1 without anything shifting.
+      var ow = view.offsetWidth || vw;
+      var natLeft = view.offsetLeft;
+      var natTop = view.offsetTop - sy;
+
+      // Breaking out of the bezel is its own, later curve. If the content
+      // simply grew with the zoom it would overflow the monitor frame while
+      // that frame is still drawn, which reads as a layout bug rather than an
+      // effect — so it stays screen-sized until the desk starts dissolving.
+      // On a phone the drawn monitor is only a couple of hundred pixels wide:
+      // a page rendered inside it is unreadable, so there the content leaves
+      // the bezel almost immediately and the handover carries the continuity.
+      var narrow = vw < 700;
+      var out = smoothstep(clamp01((p - (narrow ? 0.12 : 0.45)) / (narrow ? 0.62 : 0.55)));
+
+      var scale = (sw / ow) + (1 - sw / ow) * out;
+      var tx = (sx - natLeft) * (1 - out);
+      var ty = (sty - natTop) * (1 - out);
+      var visH = (sh + (vh - sh) * out) / scale;
+
+      view.style.willChange = "transform";
+      // Above the desk art (z 55) so the content reads as being *on* the
+      // monitor's face rather than behind an opaque backdrop.
+      view.style.zIndex = "56";
+      // While it is a thumbnail on a drawn screen it is a picture, not a UI:
+      // nothing here is a real tap target until it has finished growing.
+      view.style.pointerEvents = out > 0.92 ? "" : "none";
+      view.style.transform =
+        "translate(" + tx.toFixed(2) + "px," + ty.toFixed(2) + "px) scale(" + scale.toFixed(5) + ")";
+      view.style.clipPath =
+        "inset(0px 0px " + Math.max(0, view.offsetHeight - visH).toFixed(1) + "px 0px)";
+
+      // The terminal line hands over to the real page: its own text fades as
+      // the site fades up in the same rectangle, so the screen looks like it
+      // boots into the portfolio instead of being covered by it.
+      var handover = clamp01((p - 0.05) / 0.13);
+      view.style.opacity = handover.toFixed(3);
+      var scrText = el("scrText");
+      if (scrText) scrText.setAttribute("opacity", (1 - handover).toFixed(3));
+
+      if (p >= 0.999) releaseView();
+    }
+
+    el("topbar").style.opacity = clamp01((p - 0.6) / 0.3).toFixed(3);
     var cue = el("scrollCue");
     if (cue) cue.style.opacity = clamp01(1 - p * 3.4).toFixed(3);
   }
@@ -4446,6 +4660,7 @@
       el("stageInner").style.transform = "";
       el("stageInner").style.filter = "";
       el("topbar").style.opacity = "";
+      releaseView();
     }
 
     collectLayers();
