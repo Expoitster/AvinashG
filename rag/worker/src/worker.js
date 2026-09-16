@@ -28,29 +28,28 @@ Rules:
 // Defaults so the Worker runs correctly even deployed somewhere (e.g. the
 // Cloudflare dashboard's own editor) that only sets the GEMINI_API_KEY secret
 // and skips the rest of wrangler.toml's [vars].
-const DEFAULT_ALLOWED_ORIGINS = "https://expoitster.github.io,http://localhost:8080";
 const DEFAULT_EMBED_MODEL = "gemini-embedding-001";
 const DEFAULT_CHAT_MODEL = "gemini-3.5-flash-lite";
+
+// Bumped by hand on each paste-in deploy. /api/health reports it, so it is
+// possible to tell from outside whether a new paste actually took effect --
+// otherwise a silently-failed deploy looks identical to a code bug.
+const VERSION = "v4-open-cors";
 
 export default {
   async fetch(request, env) {
     env = {
       ...env,
-      ALLOWED_ORIGINS: env.ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS,
       EMBED_MODEL: env.EMBED_MODEL || DEFAULT_EMBED_MODEL,
       CHAT_MODEL: env.CHAT_MODEL || DEFAULT_CHAT_MODEL
     };
-    const origin = request.headers.get("Origin") || "";
-    const allowed = (env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim());
-    // The Worker's own origin, so the built-in test page below can call /api/chat.
-    allowed.push(new URL(request.url).origin);
-    const corsOrigin = allowed.includes(origin) ? origin : allowed[0] || "";
-
+    // No credentials or cookies are involved, so "*" is both safe and the only
+    // thing that works everywhere this gets called from: the portfolio, the
+    // built-in tester, and Cloudflare's own dashboard preview pane.
     const cors = {
-      "Access-Control-Allow-Origin": corsOrigin,
+      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Vary": "Origin"
+      "Access-Control-Allow-Headers": "Content-Type"
     };
 
     if (request.method === "OPTIONS") {
@@ -71,7 +70,14 @@ export default {
     // Reports whether the secret is set without ever revealing it.
     if (url.pathname === "/api/health") {
       return json(
-        { ok: true, keyConfigured: !!env.GEMINI_API_KEY, chunks: indexData.length, chatModel: env.CHAT_MODEL },
+        {
+          ok: true,
+          version: VERSION,
+          keyConfigured: !!env.GEMINI_API_KEY,
+          chunks: indexData.length,
+          chatModel: env.CHAT_MODEL,
+          seenOrigin: request.headers.get("Origin") || "(none sent)"
+        },
         200,
         cors
       );
@@ -81,14 +87,9 @@ export default {
       return new Response("Not found", { status: 404, headers: cors });
     }
 
-    // A cross-site request always carries an Origin header -- that's set by the
-    // browser, not by page JS, so it can't be spoofed. A request with none at
-    // all can only be a same-origin call (some mobile browsers omit it there),
-    // a direct hit from curl/Postman, or an older browser -- none of which
-    // Origin-checking exists to stop. Only an explicit, mismatched Origin is
-    // actually rejected.
-    if (origin && !allowed.includes(origin)) {
-      return json({ error: "Origin not allowed" }, 403, cors);
+    const limit = rateLimit(request);
+    if (!limit.ok) {
+      return json({ error: "Too many questions from this connection. Try again in a few minutes." }, 429, cors);
     }
 
     if (!env.GEMINI_API_KEY) {
@@ -176,6 +177,28 @@ function l2norm(vec) {
   return vec.map((v) => v / mag);
 }
 
+/**
+ * Best-effort per-IP throttle, replacing an origin allowlist that stopped no
+ * real abuse (curl sends no Origin) while breaking real browsers. State is
+ * per-isolate, so the true ceiling is higher than MAX under load -- enough to
+ * blunt a scripted hammering of the Gemini quota, not a hard guarantee. Put
+ * Cloudflare's own rate-limiting rules in front for that.
+ */
+const RATE_MAX = 25;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const hits = new Map();
+
+function rateLimit(request) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const now = Date.now();
+  const recent = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+
+  if (hits.size > 5000) hits.clear(); // bound memory on a long-lived isolate
+  return { ok: recent.length <= RATE_MAX };
+}
+
 function dedupeSources(matches) {
   const seen = new Set();
   const out = [];
@@ -187,8 +210,27 @@ function dedupeSources(matches) {
   return out;
 }
 
+/**
+ * Embeddings ship base64-encoded int8 rather than JSON float arrays: same
+ * vectors at ~1/6 the characters, which keeps the whole Worker small enough
+ * to paste into the dashboard editor without risking a truncated script.
+ * Cosine is scale-invariant, so comparing a float query against dequantized
+ * int8 documents needs no rescaling.
+ */
+let decoded = null;
+
+function decodeIndex(chunks) {
+  return chunks.map((c) => {
+    const bin = atob(c.embedding);
+    const vec = new Int8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) vec[i] = (bin.charCodeAt(i) << 24) >> 24;
+    return { ...c, vec };
+  });
+}
+
 function topMatches(queryVec, chunks, k) {
-  const scored = chunks.map((c) => ({ ...c, score: cosine(queryVec, c.embedding) }));
+  if (!decoded) decoded = decodeIndex(chunks);
+  const scored = decoded.map((c) => ({ ...c, score: cosine(queryVec, c.vec) }));
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, k);
 }
@@ -290,9 +332,10 @@ const TEST_PAGE = `<!doctype html>
   var btn = document.getElementById("b");
 
   fetch("/api/health").then(function (r) { return r.json(); }).then(function (d) {
-    document.getElementById("status").innerHTML = d.keyConfigured
+    document.getElementById("status").innerHTML = (d.keyConfigured
       ? '<span class="ok">Worker live \\u00b7 ' + d.chunks + ' chunks indexed \\u00b7 API key set</span>'
-      : '<span style="color:#FFB03A">Worker live, but GEMINI_API_KEY is NOT set \\u2014 add it under Settings \\u2192 Variables and Secrets</span>';
+      : '<span style="color:#FFB03A">Worker live, but GEMINI_API_KEY is NOT set \\u2014 add it under Settings \\u2192 Variables and Secrets</span>')
+      + '<br><span style="color:#64748E">version ' + d.version + '</span>';
   }).catch(function () {
     document.getElementById("status").textContent = "Could not reach /api/health.";
   });

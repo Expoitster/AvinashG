@@ -2,10 +2,10 @@ name = "avinashg-rag"
 main = "src/worker.js"
 compatibility_date = "2025-01-01"
 
-# Origins allowed to call this Worker. Add the Claude preview origin here
-# while testing, then narrow to just the GitHub Pages origin before launch.
+# No ALLOWED_ORIGINS: origin gating blocked real browsers without stopping
+# scripted abuse (curl sends no Origin at all). Per-IP rate limiting in
+# worker.js replaces it.
 [vars]
-ALLOWED_ORIGINS = "https://expoitster.github.io,http://localhost:8080,http://localhost:8081"
 EMBED_MODEL = "gemini-embedding-001"
 CHAT_MODEL = "gemini-3.5-flash-lite"
 

@@ -146,6 +146,21 @@ function l2norm(vec) {
   return vec.map((v) => v / mag);
 }
 
+/**
+ * Store each unit vector as base64 int8 instead of a JSON float array: ~1/6
+ * the characters, which is what keeps the pasteable Worker bundle small.
+ * Quantization error is far below the gap between competing chunks at this
+ * corpus size — verified by diffing ranked results against the float index.
+ */
+function quantize(vec) {
+  const buf = Buffer.alloc(vec.length);
+  for (let i = 0; i < vec.length; i++) {
+    const q = Math.max(-127, Math.min(127, Math.round(vec[i] * 127)));
+    buf[i] = q & 0xff;
+  }
+  return buf.toString("base64");
+}
+
 async function main() {
   console.log("Rendering routes...");
   const rendered = await renderRoutes();
@@ -165,9 +180,7 @@ async function main() {
   console.log("Embedding chunks with Gemini...");
   const out = [];
   for (const c of allChunks) {
-    // 3 decimals: cuts the bundle ~25% over 5, with no measurable retrieval-quality
-    // loss at this corpus size — verified by re-running real queries after rounding.
-    const embedding = (await embed(c.text)).map((v) => Math.round(v * 1e3) / 1e3);
+    const embedding = quantize(await embed(c.text));
     out.push({ ...c, embedding });
     process.stdout.write(".");
   }
