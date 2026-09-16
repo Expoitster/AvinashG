@@ -81,7 +81,13 @@ export default {
       return new Response("Not found", { status: 404, headers: cors });
     }
 
-    if (!allowed.includes(origin)) {
+    // A cross-site request always carries an Origin header -- that's set by the
+    // browser, not by page JS, so it can't be spoofed. A request with none at
+    // all can only be a same-origin call (some mobile browsers omit it there),
+    // a direct hit from curl/Postman, or an older browser -- none of which
+    // Origin-checking exists to stop. Only an explicit, mismatched Origin is
+    // actually rejected.
+    if (origin && !allowed.includes(origin)) {
       return json({ error: "Origin not allowed" }, 403, cors);
     }
 
