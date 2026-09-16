@@ -850,7 +850,7 @@
   @keyframes rgbshift { 0% { opacity: .5 } 50% { opacity: .85 } 100% { opacity: .5 } }
 
   #spacer { height: 0; }
-  #spacer.on { height: 172vh; }
+  #spacer.on { height: 118vh; }
 
   /* reduced-motion / no-JS variant: scene sits in normal flow */
   body.static-intro .stage.live {
@@ -1825,7 +1825,7 @@
     .jentry { padding: 16px; }
     .trace-row { grid-template-columns: 42px 1fr; gap: 12px; }
     .chain { gap: 6px; }
-    #spacer.on { height: 150svh; }
+    #spacer.on { height: 108svh; }
     .scroll-cue { top: calc(10px + env(safe-area-inset-top, 0px)); }
   }
 
@@ -4417,6 +4417,13 @@
     return Math.max(1, sp ? sp.offsetHeight : M.vh * 1.2);
   }
 
+  /* True while the overview is still being shown as a preview on the monitor. */
+  function introHolding() {
+    var stage = el("stage");
+    if (staticIntro || !stage || !stage.classList.contains("live")) return false;
+    return window.scrollY < introSpan();
+  }
+
   function releaseView() {
     var view = el("view");
     if (!view || !view.style.transform) return;
@@ -4425,7 +4432,7 @@
     view.style.willChange = "";
     view.style.zIndex = "";
     view.style.opacity = "";
-    view.style.pointerEvents = "";
+    M.introOut = 1;
     var scrText = el("scrText");
     if (scrText) scrText.setAttribute("opacity", "1");
   }
@@ -4491,9 +4498,11 @@
       // Above the desk art (z 55) so the content reads as being *on* the
       // monitor's face rather than behind an opaque backdrop.
       view.style.zIndex = "56";
-      // While it is a thumbnail on a drawn screen it is a picture, not a UI:
-      // nothing here is a real tap target until it has finished growing.
-      view.style.pointerEvents = out > 0.92 ? "" : "none";
+      // Stays hit-testable throughout: a pointerdown while the page is still a
+      // preview is caught below and lands the intro instead of being swallowed.
+      // Blocking pointer events outright left a long stretch where the page was
+      // visible but inert, which is the worst of both.
+      M.introOut = out;
       view.style.transform =
         "translate(" + tx.toFixed(2) + "px," + ty.toFixed(2) + "px) scale(" + scale.toFixed(5) + ")";
       view.style.clipPath =
@@ -4534,20 +4543,29 @@
     var rail = el("rail");
     if (rail) rail.style.transform = "scaleX(" + (sy / M.docH).toFixed(4) + ")";
 
-    updateIntro(sy);
+    // The intro tracks the raw scroll rather than the damped value: it is
+    // pinned under the finger, and lag there reads as the animation sticking.
+    updateIntro(target);
     updateTrace(sy);
+
+    // While the page is a preview on the monitor it must hold still. Driving
+    // its scenes and parallax from the live scroll animated the *contents* of
+    // the screen as the runway advanced, which looked like the picture inside
+    // the monitor scrolling. Freezing them at the scroll position the intro
+    // lands on means the preview shows exactly the page you arrive at.
+    var csy = introHolding() ? introSpan() : sy;
 
     // Every section publishes its own 0..1 scroll progress, so each one can
     // carry motion of its own rather than sharing one global parallax.
     for (var si = 0; si < M.scenes.length; si++) {
       var sc = M.scenes[si];
-      if (sc.top - sy > M.vh * 1.4 || sc.top + sc.h - sy < -M.vh * 0.4) continue;
-      var prog = (sy + M.vh - sc.top) / (sc.h + M.vh);
+      if (sc.top - csy > M.vh * 1.4 || sc.top + sc.h - csy < -M.vh * 0.4) continue;
+      var prog = (csy + M.vh - sc.top) / (sc.h + M.vh);
       sc.el.style.setProperty("--p", (prog < 0 ? 0 : prog > 1 ? 1 : prog).toFixed(4));
     }
 
     // layered parallax across sections
-    var center = sy + M.vh / 2;
+    var center = csy + M.vh / 2;
     for (var i = 0; i < M.layers.length; i++) {
       var p = M.layers[i];
       var rel = (center - (p.top + p.h / 2)) / M.vh;
@@ -4867,9 +4885,22 @@
   // Reveal animations are opt-in, so the page renders fully without JS.
   if (!staticIntro) document.body.classList.add("anim");
 
+  /* Reaching for anything while the page is still a preview lands the intro
+     instead. The first tap is spent settling — the targets under it are a
+     fraction of their real size and still moving, so acting on it would mean
+     hitting whatever happened to be under the finger mid-flight. */
+  el("view").addEventListener("pointerdown", function (e) {
+    if (!introHolding() || (M.introOut || 0) > 0.9) return;
+    e.preventDefault();
+    e.stopPropagation();
+    window.scrollTo({ top: Math.round(introSpan()), behavior: "auto" });
+  }, true);
+
+  // One tap clears the whole intro rather than dropping the visitor partway
+  // through it, still holding a preview they cannot use yet.
   el("scrollCue").addEventListener("click", function () {
     window.scrollTo({
-      top: Math.round(window.innerHeight * 1.28),
+      top: Math.round(introSpan()),
       behavior: staticIntro ? "auto" : "smooth"
     });
   });
