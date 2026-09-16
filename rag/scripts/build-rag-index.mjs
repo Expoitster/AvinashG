@@ -171,9 +171,13 @@ async function main() {
   console.log(`Chunked into ${allChunks.length} passages.`);
 
   if (DRY_RUN) {
-    mkdirSync(dirname(OUT), { recursive: true });
-    writeFileSync(OUT, JSON.stringify(allChunks.map((c) => ({ ...c, embedding: [] })), null, 2));
-    console.log(`Dry run: wrote ${OUT} with ${allChunks.length} chunks and NO embeddings (not usable by the Worker yet).`);
+    // Deliberately NOT the real index path: a dry run that overwrites the
+    // live index with empty embeddings silently breaks retrieval, and the
+    // Worker still starts, so the damage only shows up as bad answers.
+    const preview = OUT.replace(/\.json$/, ".dryrun.json");
+    mkdirSync(dirname(preview), { recursive: true });
+    writeFileSync(preview, JSON.stringify(allChunks, null, 2));
+    console.log(`Dry run: ${allChunks.length} chunks written to ${preview}. The real index was left untouched.`);
     return;
   }
 

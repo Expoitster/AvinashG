@@ -2,27 +2,14 @@
   "name": "avinash-portfolio",
   "version": "0.1.0",
   "private": true,
+  "description": "Portfolio site: a single authored HTML source built into docs/ for GitHub Pages, plus the retrieval backend that answers questions about it.",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "@phosphor-icons/react": "^2.1.10",
-    "framer-motion": "^13.2.0",
-    "next": "16.3.4",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "build": "node scripts/build-site.mjs",
+    "qa": "node scripts/qa-responsive.cjs",
+    "rag:index": "node rag/scripts/build-rag-index.mjs",
+    "rag:bundle": "node rag/scripts/bundle-worker.mjs"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.4",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "playwright": "^1.63.0"
   }
 }

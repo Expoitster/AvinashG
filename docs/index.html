@@ -1574,7 +1574,10 @@
   }
 
   /* ---------- ask bar + chat ---------- */
-  .ask { padding: clamp(30px, 5vh, 52px) 0 0; }
+  /* First thing under a sticky 64px topbar, so it has to clear it outright —
+     at the scroll position the intro lands on, less clearance puts the field
+     under the bar. */
+  .ask { padding: calc(var(--topbar-h) + clamp(16px, 3vh, 36px)) 0 0; }
   /* the ask bar opens the page, so the hero below it keeps its seamless edge */
   .ask + .hero { border-top: 0; padding-top: clamp(30px, 5vh, 52px); }
   .ask-label {

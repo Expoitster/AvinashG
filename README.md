@@ -1,64 +1,68 @@
 # Avinash — AI Product Manager Portfolio
 
-A multi-page portfolio built as a connected knowledge graph rather than a
-list of unrelated pages: Home → Work / Journey → Case Studies → Product
-Thinking → About / Resume / Contact, with every case study linking forward
-into related work and back into a shared capability map.
+A portfolio built as a connected narrative rather than a list of unrelated
+pages: an opening desk scene the site grows out of, then Story → Experience →
+case studies → Thinking → Lab → Beyond, with each case study linking forward
+into related work and back into a shared capability map. An assistant on the
+overview answers questions using only what the site already publishes.
 
-Stack: Next.js (App Router) + TypeScript + Tailwind CSS v4 + Framer Motion.
+Live at **https://expoitster.github.io/AvinashG/**
 
-## Two implementations live here
+## How it is built
 
-- `design/avinash-console.html` — **the current site.** A self-contained
-  single-file build: a desk-scene opening that zooms through the monitor
-  into an operator console, an interactive voice-pipeline latency lab, and
-  a responsive project/capability map.
-- `src/` — the earlier multi-page Next.js draft. Same information
-  architecture and content, earlier visual direction. Superseded by the
-  console build above.
+One authored file, no framework and no bundler:
 
-## Publishing
+- **`design/avinash-console.html`** — the site. Markup, CSS, data, views and
+  the scroll-motion engine, in a single file of plain JavaScript.
+- **`docs/index.html`** — generated output, served by GitHub Pages. Never edit
+  it directly.
 
-`design/avinash-console.html` is authored as a fragment, because the Claude
-Artifact host supplies the surrounding document. GitHub Pages does not, so
-the build step wraps it (the viewport meta especially — without it phones
-render the page at a 980px fallback width):
+The source is authored as a fragment because the Claude Artifact host supplies
+the surrounding document; GitHub Pages does not. The build step adds that
+shell — the viewport meta especially, without which phones render the page at
+a 980px fallback width:
 
 ```bash
-node scripts/build-site.mjs   # design/avinash-console.html -> docs/index.html
+node scripts/build-site.mjs      # design/avinash-console.html -> docs/index.html
 ```
 
 Commit the regenerated `docs/index.html` alongside any source change.
+`.github/workflows/deploy-pages.yml` publishes `docs/` on every push to
+`main`, and `docs/.nojekyll` keeps Pages from running it through Jekyll.
 
-Deployment is automatic: `.github/workflows/deploy-pages.yml` publishes
-`docs/` to GitHub Pages on every push to `main`. It passes
-`enablement: true` to `actions/configure-pages`, so the first run turns
-Pages on by itself — no manual toggle in repository settings.
+## The assistant
 
-`docs/.nojekyll` keeps Pages from running the file through Jekyll.
+`rag/` holds a Cloudflare Worker that answers visitor questions from the
+site's own content — retrieval over an index built by rendering every route,
+so it cannot drift from what is actually published. It never invents an
+answer: anything outside the indexed content gets a plain "not covered here"
+and a pointer to the contact section.
 
-## Structure
+Setup, deployment (including a no-terminal path through Cloudflare's
+dashboard) and the index pipeline are documented in
+[`rag/README.md`](rag/README.md).
 
-- `src/lib/content.ts` — single source of truth for all copy (resume facts +
-  the case-study architecture supplied in the sitemap spec). Edit content here.
-- `src/components/motion/` — `Reveal` (scroll-in fade) and `Parallax`
-  (subtle scroll parallax), both disabled under `prefers-reduced-motion`.
-- `src/components/ui.tsx` — shared UI atoms (buttons, tags, metric stats, cards).
-- `src/app/work/[slug]/page.tsx` — reusable case-study template driven by
-  `caseStudies` in `content.ts`, so a new project only needs a new data entry.
-
-## Getting Started
+## Checking a change
 
 ```bash
-npm install
-npm run dev
+node scripts/build-site.mjs && node scripts/qa-responsive.cjs
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+The audit drives 10 viewports across 14 routes and fails on horizontal
+overflow, tap targets under 40px, type under 11.5px, content stuck
+mid-transition, rendered `undefined`, and leaked CSS escape sequences —
+the class of defect that survives a careful reading of the diff.
 
-## Build
+## Layout
 
-```bash
-npm run build
-npm run lint
-```
+| Path | What it is |
+| --- | --- |
+| `design/avinash-console.html` | the site — edit this |
+| `docs/` | generated output, served by Pages |
+| `scripts/build-site.mjs` | wraps the fragment into a standalone page |
+| `scripts/qa-responsive.cjs` | device-matrix audit |
+| `rag/` | the assistant's Worker, index builder and docs |
+| `assets/` | source documents not published by the site |
+
+Requires Node and `npm install` (Playwright only, for the audit and the
+index builder).
