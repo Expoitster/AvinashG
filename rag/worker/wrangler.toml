@@ -1,0 +1,12 @@
+name = "avinashg-rag"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+# No ALLOWED_ORIGINS: origin gating blocked real browsers without stopping
+# scripted abuse (curl sends no Origin at all). Per-IP rate limiting in
+# worker.js replaces it.
+[vars]
+EMBED_MODEL = "gemini-embedding-001"
+CHAT_MODEL = "gemini-3.5-flash-lite"
+
+# Set with: wrangler secret put GEMINI_API_KEY
