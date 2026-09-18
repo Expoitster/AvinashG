@@ -107,6 +107,50 @@ function audit(isTouch) {
     ? [(copy.match(/\\[0-9a-fA-F]{4}|\\u[0-9a-fA-F]{4}/) || [""])[0]] : [];
   holes.push.apply(holes, escaped);
 
+  // Colour contrast. A theme change can push text under WCAG AA everywhere at
+  // once while every layout check still passes, and the page still *looks*
+  // deliberate — so it is asserted rather than eyeballed. Translucent layers
+  // are composited before measuring: a 9% tint is not its own base colour.
+  const parseC = (c) => {
+    const m = (c.match(/[\d.]+/g) || []).map(Number);
+    return { r: m[0] || 0, g: m[1] || 0, b: m[2] || 0, a: m.length > 3 ? m[3] : 1 };
+  };
+  const relLum = (c) => {
+    const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  };
+  const behind = (el) => {
+    const stack = [];
+    let n = el;
+    while (n && n !== document.documentElement) {
+      const c = parseC(getComputedStyle(n).backgroundColor);
+      if (c.a > 0) { stack.push(c); if (c.a >= 0.999) break; }
+      n = n.parentElement;
+    }
+    let out = { r: 255, g: 255, b: 255 };
+    for (let i = stack.length - 1; i >= 0; i--) {
+      const c = stack[i];
+      out = { r: c.r * c.a + out.r * (1 - c.a), g: c.g * c.a + out.g * (1 - c.a), b: c.b * c.a + out.b * (1 - c.a) };
+    }
+    return out;
+  };
+  const contrast = [];
+  document.querySelectorAll("#view p, #view h1, #view h2, #view h3, #view a, #view li, #view span, #view dd, .topbar a").forEach((n) => {
+    const t = (n.textContent || "").trim();
+    if (!t || t.length < 2) return;
+    const cs = getComputedStyle(n);
+    if (cs.display === "none" || cs.visibility === "hidden" || parseFloat(cs.opacity) < 0.5) return;
+    const r = n.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return;
+    const size = parseFloat(cs.fontSize);
+    const large = size >= 24 || (size >= 18.66 && parseInt(cs.fontWeight, 10) >= 700);
+    const L1 = relLum(parseC(cs.color)), L2 = relLum(behind(n));
+    const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+    if (ratio < (large ? 3 : 4.5)) {
+      contrast.push(`${n.tagName.toLowerCase()}.${(typeof n.className === "string" ? n.className.split(" ")[0] : "")} ${ratio.toFixed(2)}:1`);
+    }
+  });
+
   return {
     holes,
     overflow,
@@ -115,6 +159,7 @@ function audit(isTouch) {
     tiny: [...new Set(tiny)].slice(0, 4),
     stuck: [...new Set(stuck)].slice(0, 4),
     textLen: main ? (main.innerText || "").trim().length : 0,
+    contrast: [...new Set(contrast)].slice(0, 5),
   };
 }
 
@@ -169,6 +214,7 @@ function audit(isTouch) {
       if (r.stuck.length) fail(d.name, route, `content stuck hidden: ${r.stuck.join(", ")}`);
       if (r.holes && r.holes.length) fail(d.name, route, `rendered placeholder text: ${r.holes.join(", ")}`);
       if (r.textLen < 120) fail(d.name, route, `page nearly empty (${r.textLen} chars)`);
+      if (r.contrast && r.contrast.length) fail(d.name, route, `contrast below WCAG AA: ${r.contrast.join(", ")}`);
     }
 
     // ---- interaction checks ----

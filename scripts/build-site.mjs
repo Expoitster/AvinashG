@@ -30,16 +30,16 @@ const page = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="${DESCRIPTION}">
-<meta name="theme-color" content="#101722">
+<meta name="theme-color" content="#FAF8F3">
 <link rel="canonical" href="${SITE_URL}">
 <meta property="og:url" content="${SITE_URL}">
 <meta property="og:title" content="Avinash Garudapalli">
 <meta property="og:description" content="${DESCRIPTION}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23101722'/><circle cx='16' cy='16' r='7' fill='%23FFB03A'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23FAF8F3'/><circle cx='16' cy='16' r='7' fill='%23B0690F'/></svg>">
 <style>
-  :root { color-scheme: dark; }
+  :root { color-scheme: light; }
   html, body { margin: 0; }
   img { max-width: 100%; }
   [hidden] { display: none !important; }
