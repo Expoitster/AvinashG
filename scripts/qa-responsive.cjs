@@ -301,7 +301,7 @@ function audit(isTouch) {
       const found = want.map((w) => ext.some((a) => a.href.includes(w)));
       const unsafe = ext.filter((a) => a.target === "_blank" && !/noreferrer|noopener/.test(a.rel || ""));
       // a favicon of any shape must stay inside its fixed chip
-      const spill = [...document.querySelectorAll(".mark-chip")].filter((c) => {
+      const spill = [...document.querySelectorAll("#view .mark-chip, .site-footer .mark-chip")].filter((c) => {
         const cr = c.getBoundingClientRect();
         return [...c.querySelectorAll("img")].some((im) => {
           const ir = im.getBoundingClientRect();
@@ -311,7 +311,8 @@ function audit(isTouch) {
       return { found, unsafe: unsafe.length, spill, total: ext.length };
     });
     const fallback = await page.evaluate(() => {
-      const chips = [...document.querySelectorAll(".mark-chip")];
+      // the intro preview is a decorative clone inside the SVG; audit the real page
+      const chips = [...document.querySelectorAll("#view .mark-chip, .site-footer .mark-chip")];
       if (!chips.length) return { err: "no brand chips rendered" };
       const bad = chips.filter((c) => {
         const r = c.getBoundingClientRect();
@@ -349,7 +350,7 @@ function audit(isTouch) {
     const bs = await page.evaluate(async () => {
       location.hash = "#/";
       await new Promise((r) => setTimeout(r, 800));
-      const btn = document.querySelector('[data-gal="blankstore"]');
+      const btn = document.querySelector('#view [data-gal="blankstore"]');
       if (!btn) return { err: "no blankstore entry" };
       btn.click();
       await new Promise((r) => setTimeout(r, 500));

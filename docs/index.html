@@ -53,6 +53,35 @@
 
     /* editorial rhythm */
     --sec-y: clamp(90px, 13vh, 160px);
+
+    /* ---- Material 3 system tokens ----
+       Motion, elevation and shape follow Material's scales so every surface
+       reacts the same way. The typography and palette stay bespoke: Material
+       is applied as the interaction system, not as a skin. */
+    --md-ease: cubic-bezier(.2, 0, 0, 1);          /* emphasised decelerate */
+    --md-ease-accel: cubic-bezier(.3, 0, .8, .15); /* emphasised accelerate */
+    --md-short: 200ms;
+    --md-medium: 350ms;
+    --md-long: 500ms;
+
+    /* elevation: ambient + key light, per Material's two-shadow model */
+    --md-e1: 0 1px 2px rgba(46,58,80,.10), 0 1px 3px 1px rgba(46,58,80,.07);
+    --md-e2: 0 1px 2px rgba(46,58,80,.10), 0 2px 6px 2px rgba(46,58,80,.07);
+    --md-e3: 0 4px 8px 3px rgba(46,58,80,.08), 0 1px 3px rgba(46,58,80,.12);
+
+    /* shape scale */
+    --md-r-xs: 4px;
+    --md-r-s: 8px;
+    --md-r-m: 12px;
+    --md-r-l: 16px;
+
+    /* state layer opacities */
+    --md-hover: .08;
+    --md-focus: .10;
+    --md-press: .10;
+
+    /* Material's minimum touch target */
+    --md-target: 48px;
   }
 
   * { box-sizing: border-box; }
@@ -96,6 +125,7 @@
     background: rgba(250,248,243,.88);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--rule);
+    box-shadow: var(--md-e1);
   }
 
   .mark {
@@ -846,12 +876,20 @@
     border: 0;
     cursor: pointer;
     font-family: var(--f-mono);
-    font-size: .74rem;
-    letter-spacing: .08em;
-    color: var(--dim);
-    padding: 8px 14px;
+    font-size: .82rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--paper);
+    padding: 11px 20px;
+    background: var(--panel);
+    border: 1px solid var(--rule-2);
+    border-radius: 999px;
+    box-shadow: var(--md-e2);
+    transition: color .2s, border-color .2s, transform .24s cubic-bezier(.2,0,0,1);
   }
-  .scroll-cue:hover { color: var(--signal); }
+  .scroll-cue:hover { color: var(--signal); border-color: var(--signal-deep); transform: translate3d(-50%, 2px, 0); }
+  .scroll-cue .chev { color: var(--signal); }
   .scroll-cue .chev {
     width: 15px; height: 15px;
     border-right: 1.5px solid currentColor;
@@ -982,7 +1020,7 @@
     border: 1px solid var(--rule);
     text-decoration: none;
     color: inherit;
-    transition: border-color .3s, transform .5s cubic-bezier(.16,1,.3,1);
+    transition: border-color .3s, transform .5s var(--md-ease);
   }
   .live-card:hover, .live-card:focus-visible { border-color: var(--signal); transform: translateY(-4px); }
   .live-head { display: flex; align-items: center; gap: 14px; }
@@ -1056,7 +1094,7 @@
     text-decoration: none;
     color: inherit;
     overflow: hidden;
-    transition: border-color .3s, transform .5s cubic-bezier(.16,1,.3,1);
+    transition: border-color .3s, transform .5s var(--md-ease);
   }
   .rcard:hover, .rcard:focus-visible { border-color: var(--signal); transform: translateY(-5px); }
   .rcard-label { font-size: .8rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--signal); }
@@ -1099,7 +1137,7 @@
       border-top-color: transparent;
       opacity: 0;
       overflow: hidden;
-      transition: max-height .5s cubic-bezier(.16,1,.3,1), opacity .35s, margin-top .4s, padding-top .4s;
+      transition: max-height .5s var(--md-ease), opacity .35s, margin-top .4s, padding-top .4s;
     }
     .rcard:hover .rcard-snap,
     .rcard:focus-visible .rcard-snap {
@@ -1124,7 +1162,7 @@
     padding: 0;
     cursor: pointer;
     overflow: hidden;
-    transition: border-color .3s, transform .5s cubic-bezier(.16,1,.3,1);
+    transition: border-color .3s, transform .5s var(--md-ease);
   }
   .rec:hover, .rec:focus-visible { border-color: var(--signal); transform: translateY(-5px); }
   .rec .plate { border: 0; border-bottom: 1px solid var(--rule); aspect-ratio: 16 / 9; }
@@ -1263,7 +1301,7 @@
     background: var(--panel);
     border: 1px solid var(--rule);
     overflow: hidden;
-    transition: border-color .3s, transform .45s cubic-bezier(.16,1,.3,1);
+    transition: border-color .3s, transform .45s var(--md-ease);
   }
   .door:hover { border-color: var(--signal); transform: translateY(-4px); }
   .door-n {
@@ -1413,7 +1451,7 @@
 
   /* section index marker gets a live tick as you pass it */
 /* panel gets a subtle pointer-tracked tilt */
-  .tilt { transition: transform .5s cubic-bezier(.16,1,.3,1); transform-style: preserve-3d; }
+  .tilt { transition: transform .5s var(--md-ease); transform-style: preserve-3d; }
   .tilt.tracking { transition: transform .12s linear; }
 
   /* timeline progress spine */
@@ -1474,7 +1512,7 @@
     background: var(--signal);
     transform: scaleY(0);
     transform-origin: 50% 0;
-    transition: transform .4s cubic-bezier(.16,1,.3,1);
+    transition: transform .4s var(--md-ease);
   }
   .work-item:hover::after { transform: scaleY(1); }
 
@@ -1573,6 +1611,81 @@
     .reach { flex: 1 1 100%; }
   }
 
+  /* ---------- Material surface system ----------
+     Applied broadly rather than per component so every card, field and
+     control shares one shape scale, one elevation ramp and one easing curve.
+     That consistency is most of what "clean" means in Material. */
+  .rcard, .door, .rec, .live-card, .prd-item, .cap,
+  .chat, .gal, .panel, .exp, .work-item, .xp, .jentry, .ro, .init, .tg {
+    border-radius: var(--md-r-m);
+  }
+  .ask-field, .ask-send, .chat-input, .chat-send, .chat-btn,
+  .cta-top, .btn-ghost, .gal-cat, .ask-chip, .reach, .visit, .drawer-cta {
+    border-radius: var(--md-r-s);
+  }
+  .mark-chip, .msg-code, .sysnode { border-radius: var(--md-r-xs); }
+  .msg-text { border-radius: var(--md-r-m); }
+  .msg-you .msg-text { border-bottom-right-radius: var(--md-r-xs); }
+  .msg-bot .msg-text { border-bottom-left-radius: var(--md-r-xs); }
+  .plate, .prev-frame { border-radius: var(--md-r-s); }
+
+  /* Material's state layer: a tinted veil over the surface on hover/press,
+     rather than each control inventing its own hover colour. */
+  .ask-chip, .chat-btn, .gal-cat, .btn-ghost, .cta-top, .reach, .nav a, .drawer-link {
+    position: relative;
+    isolation: isolate;
+  }
+  .ask-chip::before, .chat-btn::before, .gal-cat::before, .btn-ghost::before,
+  .cta-top::before, .reach::before, .nav a::before, .drawer-link::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-short) var(--md-ease);
+  }
+  .ask-chip:hover::before, .chat-btn:hover::before, .gal-cat:hover::before,
+  .btn-ghost:hover::before, .cta-top:hover::before, .reach:hover::before,
+  .nav a:hover::before, .drawer-link:hover::before { opacity: var(--md-hover); }
+  .ask-chip:active::before, .chat-btn:active::before, .gal-cat:active::before,
+  .btn-ghost:active::before, .cta-top:active::before,
+  .reach:active::before, .drawer-link:active::before { opacity: var(--md-press); }
+
+  /* one visible focus treatment for keyboard users, everywhere */
+  a:focus-visible, button:focus-visible, input:focus-visible,
+  [role="button"]:focus-visible, [tabindex]:focus-visible {
+    outline: 3px solid var(--signal);
+    outline-offset: 2px;
+    border-radius: var(--md-r-s);
+  }
+
+  /* Material's 48dp minimum, above the 44px this already met */
+  .ask-send, .chat-send, .chat-btn, .cta-top, .btn-ghost,
+  .gal-cat, .visit, .drawer-cta, .scroll-cue { min-height: var(--md-target); }
+
+  /* the preview living inside the monitor screen */
+  .prev-frame {
+    width: 504px;
+    height: 264px;
+    overflow: hidden;
+    background: var(--ground);
+    pointer-events: none;
+  }
+  .prev-scale {
+    width: 1080px;
+    /* 504 / 1080 — the real column, shrunk to fit the screen exactly */
+    transform: scale(.4667);
+    transform-origin: 0 0;
+    padding: 0 20px;
+  }
+  .prev-scale .ask { padding-top: 26px; }
+  .prev-scale .hero { padding-top: 26px; border-top: 0; }
+  /* the preview is a picture of the page, never a live control */
+  .prev-scale * { pointer-events: none !important; animation: none !important; transition: none !important; }
+  .prev-scale .rv { opacity: 1 !important; transform: none !important; }
+
   /* ---------- elevation and hover interaction ----------
      On paper a border alone does not separate a card from the page, so the
      interactive surfaces carry a soft shadow. The shadow lives on a pseudo
@@ -1581,7 +1694,7 @@
      paint-heavy continuous animation to avoid. */
   .rcard, .door, .rec, .live-card, .prd-item, .cap, .xp, .work-item {
     position: relative;
-    box-shadow: 0 1px 2px rgba(46,58,80,.05), 0 0 0 1px rgba(46,58,80,.015);
+    box-shadow: var(--md-e1);
   }
   .rcard::after, .door::after, .rec::after,
   .live-card::after, .prd-item::after {
@@ -1589,9 +1702,9 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    box-shadow: 0 16px 34px -14px rgba(46,58,80,.30), 0 3px 10px -4px rgba(46,58,80,.16);
+    box-shadow: var(--md-e3);
     opacity: 0;
-    transition: opacity .3s cubic-bezier(.16,1,.3,1);
+    transition: opacity var(--md-medium) var(--md-ease);
   }
   .rcard:hover::after, .rcard:focus-visible::after,
   .door:hover::after, .door:focus-visible::after,
@@ -1601,7 +1714,7 @@
 
   /* the "go" line leans toward the destination on hover */
   .rcard-go, .door-go, .rec-open, .live-go, .xp-link {
-    transition: color .2s, transform .26s cubic-bezier(.16,1,.3,1);
+    transition: color .2s, transform .26s var(--md-ease);
   }
   .rcard:hover .rcard-go,
   .door:hover .door-go,
@@ -1620,7 +1733,7 @@
     opacity: .5;
     transform: scaleX(0);
     transform-origin: 0 50%;
-    transition: transform .7s cubic-bezier(.16,1,.3,1) .1s;
+    transition: transform .7s var(--md-ease) .1s;
   }
   body.anim [data-scene].seen .sec-head .idx::after { transform: scaleX(1); }
 
@@ -1805,7 +1918,7 @@
   .msg-err .msg-text { border-color: var(--signal-deep); color: var(--signal); }
 
   /* messages arrive rather than appear */
-  .msg { animation: msgIn .34s cubic-bezier(.16,1,.3,1) both; }
+  .msg { animation: msgIn .34s var(--md-ease) both; }
   @keyframes msgIn {
     from { opacity: 0; transform: translate3d(0, 10px, 0); }
     to { opacity: 1; transform: none; }
@@ -2045,6 +2158,15 @@
         <!-- scanlines -->
         <rect x="344" y="126" width="512" height="272" fill="url(#gSpill)" opacity=".25"/>
       </g>
+
+      <!-- The live preview of what is coming, drawn INSIDE the screen. It sits
+           in the SVG so it scales with the monitor for free: no per-frame
+           JavaScript, and nothing to fall out of sync while scrolling. -->
+      <foreignObject id="scrPreview" x="348" y="130" width="504" height="264" opacity="0">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="prev-frame" aria-hidden="true">
+          <div class="prev-scale" id="scrPreviewBody"></div>
+        </div>
+      </foreignObject>
       </g>
 
       <g id="layDesk">
@@ -4363,7 +4485,7 @@
     }
     closeMenu();
 
-    if (isHome) { bindMap(); askBind(); }
+    if (isHome) { bindMap(); askBind(); fillPreview(); }
     // the lab now lives on the Chat360 case study, so bind it wherever it rendered
     if (el("lab")) labBind();
 
@@ -4466,10 +4588,7 @@
       // stage-inner's transform-origin is 50% 40%
       ox: s0.left + s0.width * 0.5,
       oy: s0.top + s0.height * 0.4,
-      left: r0.left, top: r0.top, w: r0.width, h: r0.height,
-      // the content column's own layout box, also stable between resizes
-      vLeft: view.offsetLeft, vTop: view.offsetTop,
-      vW: view.offsetWidth, vH: view.offsetHeight
+      left: r0.left, top: r0.top, w: r0.width, h: r0.height
     };
   }
 
@@ -4548,107 +4667,100 @@
 
   function releaseView() {
     var view = el("view");
-    if (!view || !view.style.transform) return;
-    view.style.transform = "";
-    view.style.clipPath = "";
-    view.style.willChange = "";
-    view.style.zIndex = "";
-    view.style.opacity = "";
+    if (!view) return;
+    // Left over from the version that scaled the page itself; clearing these
+    // keeps an older cached build from stranding the content mid-transform.
+    if (view.style.transform || view.style.clipPath) {
+      view.style.transform = "";
+      view.style.clipPath = "";
+      view.style.willChange = "";
+      view.style.zIndex = "";
+      view.style.opacity = "";
+    }
     M.introOut = 1;
-    var scrText = el("scrText");
-    if (scrText) scrText.setAttribute("opacity", "1");
   }
 
+  /* Fills the monitor with a still of the page that is coming. It is a clone,
+     stripped of anything interactive, living inside the SVG — so it scales
+     with the monitor on its own and nothing has to be recomputed per frame. */
+  function fillPreview() {
+    var body = el("scrPreviewBody");
+    var view = el("view");
+    if (!body || !view) return;
+    body.innerHTML = "";
+
+    var want = [view.querySelector(".ask"), view.querySelector(".hero")];
+    for (var i = 0; i < want.length; i++) {
+      if (!want[i]) continue;
+      var copy = want[i].cloneNode(true);
+      // Duplicate ids would collide with the real controls below.
+      copy.removeAttribute("id");
+      Array.prototype.forEach.call(copy.querySelectorAll("[id]"), function (n) {
+        n.removeAttribute("id");
+      });
+      Array.prototype.forEach.call(copy.querySelectorAll("input"), function (n) {
+        n.setAttribute("tabindex", "-1");
+        n.setAttribute("readonly", "readonly");
+      });
+      Array.prototype.forEach.call(copy.querySelectorAll("a, button"), function (n) {
+        n.setAttribute("tabindex", "-1");
+      });
+      // Behavioural hooks must not survive into a decorative copy, or a
+      // selector meant for the real control finds the picture of one first.
+      Array.prototype.forEach.call(copy.querySelectorAll("[data-gal], [data-ask], [data-resume]"), function (n) {
+        n.removeAttribute("data-gal");
+        n.removeAttribute("data-ask");
+        n.removeAttribute("data-resume");
+      });
+      // A resume chip is conversation state, meaningless in a still of the
+      // page — and leaving the class on a hidden copy makes ".ask-resume"
+      // resolve to the picture rather than the real control.
+      Array.prototype.forEach.call(copy.querySelectorAll(".ask-resume"), function (n) {
+        n.parentNode.removeChild(n);
+      });
+      body.appendChild(copy);
+    }
+  }
+
+  /* The intro no longer scales the page itself. Transforming and re-clipping
+     #view — which contains the whole document — forced the compositor to
+     re-rasterise an enormous layer every frame, and that is what flickered
+     while scrolling. Only the desk SVG moves now, and the preview inside it
+     is part of that SVG, so it is genuinely fixed to the screen it sits on. */
   function updateIntro(sy) {
     var stage = el("stage");
     if (!stage || staticIntro) return;
     if (!stage.classList.contains("live")) { releaseView(); return; }
 
-    var view = el("view");
-    var g = M.intro;
     var p = clamp01(sy / introSpan());
     var e = smoothstep(p);
 
-    // A gentle push toward the desk. The old 6.6x fly-through threw the scene
-    // past the viewport; here the monitor stays put and its screen opens up.
-    var zoom = 1 + e * 0.62;
+    // A slow push toward the desk, so the monitor grows as it is approached.
+    var zoom = 1 + e * 0.52;
     el("stageInner").style.transform = "scale(" + zoom.toFixed(4) + ")";
-
-    // Desk art dissolves in step with the content breaking out of the bezel.
-    var fadeFrom = (M.vw || window.innerWidth) < 700 ? 0.3 : 0.55;
-    stage.style.opacity = (p < fadeFrom ? 1 : clamp01(1 - (p - fadeFrom) / 0.42)).toFixed(3);
-    stage.style.visibility = p >= 0.999 ? "hidden" : "visible";
 
     setLayer("layFore", e * 120, 1 + e * 0.30);
     setLayer("layDesk", e * 62, 1 + e * 0.16);
     setLayer("layMid", e * 6, 1 + e * 0.04);
     setLayer("layBack", e * -22, 1 - e * 0.03);
 
-    if (view && g) {
-      var vw = M.vw || window.innerWidth;
-      var vh = M.vh || window.innerHeight;
+    // The terminal line hands the screen over to a still of the real page,
+    // early, so what is coming is legible for most of the scroll.
+    var handover = clamp01((p - 0.04) / 0.14);
+    var scrText = el("scrText");
+    if (scrText) scrText.setAttribute("opacity", (1 - handover).toFixed(3));
+    var prev = el("scrPreview");
+    if (prev) prev.setAttribute("opacity", handover.toFixed(3));
 
-      // Where the monitor screen sits at this zoom, derived from the measured
-      // rest position rather than read back from the DOM each frame.
-      var rLeft = g.ox + (g.left - g.ox) * zoom;
-      var rTop = g.oy + (g.top - g.oy) * zoom;
-      var rW = g.w * zoom, rH = g.h * zoom;
+    // Then the desk dissolves and the real page is simply behind it.
+    var fadeFrom = 0.62;
+    stage.style.opacity = (p < fadeFrom ? 1 : clamp01(1 - (p - fadeFrom) / 0.34)).toFixed(3);
+    stage.style.visibility = p >= 0.999 ? "hidden" : "visible";
+    M.introOut = p;
 
-      // Inset a little so the content sits inside the bezel, not flush to it.
-      var pad = rW * 0.035;
-      var sx = rLeft + pad, sty = rTop + pad;
-      var sw = Math.max(1, rW - pad * 2), sh = Math.max(1, rH - pad * 2);
-
-      // The content column is a centred max-width block, so the end state is
-      // its own layout box — not the viewport. Landing exactly there is what
-      // lets the transform be dropped at p=1 without anything shifting.
-      var ow = g.vW || vw;
-      var natLeft = g.vLeft;
-      var natTop = g.vTop - sy;
-
-      // Breaking out of the bezel is its own, later curve. If the content
-      // simply grew with the zoom it would overflow the monitor frame while
-      // that frame is still drawn, which reads as a layout bug rather than an
-      // effect — so it stays screen-sized until the desk starts dissolving.
-      // On a phone the drawn monitor is only a couple of hundred pixels wide:
-      // a page rendered inside it is unreadable, so there the content leaves
-      // the bezel almost immediately and the handover carries the continuity.
-      var narrow = vw < 700;
-      var out = smoothstep(clamp01((p - (narrow ? 0.12 : 0.45)) / (narrow ? 0.62 : 0.55)));
-
-      var scale = (sw / ow) + (1 - sw / ow) * out;
-      var tx = (sx - natLeft) * (1 - out);
-      var ty = (sty - natTop) * (1 - out);
-      var visH = (sh + (vh - sh) * out) / scale;
-
-      view.style.willChange = "transform";
-      // Above the desk art (z 55) so the content reads as being *on* the
-      // monitor's face rather than behind an opaque backdrop.
-      view.style.zIndex = "56";
-      // Stays hit-testable throughout: a pointerdown while the page is still a
-      // preview is caught below and lands the intro instead of being swallowed.
-      // Blocking pointer events outright left a long stretch where the page was
-      // visible but inert, which is the worst of both.
-      M.introOut = out;
-      view.style.transform =
-        "translate(" + tx.toFixed(2) + "px," + ty.toFixed(2) + "px) scale(" + scale.toFixed(5) + ")";
-      view.style.clipPath =
-        "inset(0px 0px " + Math.max(0, g.vH - visH).toFixed(1) + "px 0px)";
-
-      // The terminal line hands over to the real page: its own text fades as
-      // the site fades up in the same rectangle, so the screen looks like it
-      // boots into the portfolio instead of being covered by it.
-      var handover = clamp01((p - 0.05) / 0.13);
-      view.style.opacity = handover.toFixed(3);
-      var scrText = el("scrText");
-      if (scrText) scrText.setAttribute("opacity", (1 - handover).toFixed(3));
-
-      if (p >= 0.999) releaseView();
-    }
-
-    el("topbar").style.opacity = clamp01((p - 0.6) / 0.3).toFixed(3);
+    el("topbar").style.opacity = clamp01((p - 0.55) / 0.3).toFixed(3);
     var cue = el("scrollCue");
-    if (cue) cue.style.opacity = clamp01(1 - p * 3.4).toFixed(3);
+    if (cue) cue.style.opacity = clamp01(1 - p * 2.6).toFixed(3);
   }
 
   function updateTrace(sy) {
@@ -5032,7 +5144,7 @@
      fraction of their real size and still moving, so acting on it would mean
      hitting whatever happened to be under the finger mid-flight. */
   el("view").addEventListener("pointerdown", function (e) {
-    if (!introHolding() || (M.introOut || 0) > 0.9) return;
+    if (!introHolding() || (M.introOut || 0) > 0.82) return;
     e.preventDefault();
     e.stopPropagation();
     window.scrollTo({ top: Math.round(introSpan()), behavior: "auto" });
