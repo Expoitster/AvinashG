@@ -28,21 +28,31 @@ let body = readFileSync(SRC, "utf8");
  * points the tags at it. Version drift is impossible: these are the same
  * files npm resolved, not a URL that might serve something else later.
  */
+/* [ file inside node_modules, name written to docs/vendor/, exact CDN URL in
+   the source ]. The CDN URL is listed rather than derived: SplitType ships at
+   /umd/index.min.js but is vendored under a descriptive name, so anything that
+   infers one from the other silently stops matching. */
 const VENDOR = [
-  ["gsap/dist/gsap.min.js", "gsap.min.js"],
-  ["gsap/dist/ScrollTrigger.min.js", "ScrollTrigger.min.js"],
+  ["gsap/dist/gsap.min.js", "gsap.min.js",
+   "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"],
+  ["gsap/dist/ScrollTrigger.min.js", "ScrollTrigger.min.js",
+   "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"],
+  ["lenis/dist/lenis.min.js", "lenis.min.js",
+   "https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"],
+  ["split-type/umd/index.min.js", "split-type.min.js",
+   "https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"],
 ];
 const vendorDir = resolve(root, "docs/vendor");
 mkdirSync(vendorDir, { recursive: true });
-for (const [from, to] of VENDOR) {
+for (const [from, to, cdn] of VENDOR) {
   copyFileSync(resolve(root, "node_modules", from), resolve(vendorDir, to));
-  body = body.replace(
-    new RegExp("https://cdn\\.jsdelivr\\.net/npm/gsap@[\\d.]+/dist/" + to.replace(".", "\\.")),
-    "vendor/" + to
-  );
+  if (!body.includes(cdn)) {
+    throw new Error(`vendored ${to} but the source never referenced ${cdn}`);
+  }
+  body = body.split(cdn).join("vendor/" + to);
 }
 if (body.includes("cdn.jsdelivr.net")) {
-  throw new Error("a GSAP CDN URL survived vendoring — check the version in the source matches the rewrite");
+  throw new Error("a CDN URL survived vendoring — add it to VENDOR or fix the version in the source");
 }
 
 const DESCRIPTION =
