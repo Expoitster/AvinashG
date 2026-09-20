@@ -109,6 +109,118 @@
   }
 
   /* ---------- top bar ---------- */
+  /* ---------- lime band ----------
+     The reference's structural signature: the ground does not gradate from
+     black to lime, it swaps outright, edge to edge, and the type inverts with
+     it. Full-bleed out of the centred container via the 50vw margin trick,
+     because the section sits inside a max-width wrapper and the colour must
+     not.
+
+     Every colour token is redefined on the band rather than overriding
+     individual rules, so anything dropped inside it inverts without knowing
+     the band exists. */
+  .band {
+    position: relative;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding-left: calc(50vw - 50%);
+    padding-right: calc(50vw - 50%);
+    padding-top: var(--sec-y);
+    padding-bottom: var(--sec-y);
+    /* Literal, not var(--signal). The band redefines --signal below for the
+       benefit of its children, and a custom property redefined on an element
+       applies to that element's own declarations too — so var(--signal) here
+       resolved to the inverted near-black and the band rendered dark. */
+    background: #9AEE30;
+
+    --ground: #9AEE30;
+    --ground-2: #8FE026;
+    --panel: #93E52B;
+    --panel-2: #8AD91F;
+    --rule: #6FB01F;
+    --rule-2: #5C9418;
+    --paper: #06120A;
+    --dim: #17340E;
+    --dim-2: #1E400F;
+    --signal: #06120A;
+    --signal-deep: #2A5714;
+    --data: #06120A;
+    --data-deep: #3E7A1C;
+    color: var(--paper);
+  }
+  /* Elevation is a light-on-dark idea. On the lime field the reference uses
+     hard edges, so the shadow tokens flatten rather than tint. */
+  .band {
+    --md-e1: none;
+    --md-e2: none;
+    --md-e3: none;
+  }
+  .band a { color: var(--paper); }
+
+  /* A notched corner, the folder-tab cut on the reference's cards. Pure clip
+     path so it costs nothing and scales with the box. */
+  .notch {
+    clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
+  }
+  .notch-l {
+    clip-path: polygon(22px 0, 100% 0, 100% 100%, 0 100%, 0 22px);
+  }
+
+  /* ---------- HUD chrome ----------
+     Small tracked-out mono readouts across the top rail, and a vertical
+     label pinned to the right margin. Purely instrumentation: it carries the
+     technical register of the reference without claiming anything. Hidden
+     from assistive tech — a screen reader should reach the navigation, not a
+     recital of coordinates. */
+  .hud {
+    display: none;
+    gap: clamp(18px, 3vw, 46px);
+    margin-left: clamp(18px, 4vw, 60px);
+    font-family: var(--f-mono);
+    font-size: 9.5px;
+    line-height: 1.45;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--dim-2);
+    white-space: nowrap;
+  }
+  /* Below 1180px the rail has to hold the mark, six nav items and a CTA;
+     the readouts are the first thing that can go. */
+  @media (min-width: 1180px) { .hud { display: flex; } }
+  .hud-sub { color: var(--signal-deep); }
+  .hud-status { display: flex; align-items: center; gap: 7px; }
+  .hud-led {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--signal);
+    box-shadow: 0 0 0 3px rgba(154, 238, 48, .16);
+  }
+  body.anim .hud-led { animation: hudPulse 2.4s var(--md-ease) infinite; }
+  @keyframes hudPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(154, 238, 48, .16); }
+    50%      { box-shadow: 0 0 0 6px rgba(154, 238, 48, .04); }
+  }
+
+  .edge-rail {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    z-index: 30;
+    transform: translateY(-50%);
+    padding: 14px 5px;
+    background: var(--signal);
+    pointer-events: none;
+  }
+  .edge-rail-text {
+    display: block;
+    /* sideways-rl keeps the glyphs upright-rotated rather than stacked */
+    writing-mode: vertical-rl;
+    font-family: var(--f-mono);
+    font-size: 9.5px;
+    letter-spacing: .22em;
+    color: #000;
+  }
+  @media (max-width: 900px) { .edge-rail { display: none; } }
+
   .topbar {
     position: sticky;
     top: 0;
@@ -2271,6 +2383,17 @@
 
 <header class="topbar" id="topbar">
   <a class="mark" href="#/"><span class="dot" aria-hidden="true"></span>Avinash<span class="mark-full">&nbsp;Garudapalli</span></a>
+
+  <!-- HUD readouts. Decorative instrumentation, aria-hidden so a screen
+       reader is not read a stream of coordinates before the navigation.
+       The values are real: Mumbai's coordinates and the visitor's own clock,
+       not invented telemetry dressed up as data. -->
+  <div class="hud" aria-hidden="true">
+    <span class="hud-cell hud-status"><i class="hud-led"></i>OPEN&nbsp;·&nbsp;TO&nbsp;WORK</span>
+    <span class="hud-cell hud-place">MUMBAI,&nbsp;IN<br><span class="hud-sub" id="hudClock">--:--</span></span>
+    <span class="hud-cell hud-geo">19°04'34.0"N<br><span class="hud-sub">72°52'39.0"E</span></span>
+  </div>
+
   <nav class="nav" id="nav" aria-label="Sections"></nav>
   <a class="cta-top" href="#/contact">Let's connect</a>
   <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navDrawer">
@@ -2278,6 +2401,9 @@
     <span class="nav-toggle-label">Menu</span>
   </button>
 </header>
+
+<!-- Vertical edge rail, fixed to the right margin. -->
+<div class="edge-rail" aria-hidden="true"><span class="edge-rail-text">PORTFOLIO&nbsp;/&nbsp;2026</span></div>
 
 <div class="drawer-scrim" id="navScrim" hidden></div>
 <nav class="drawer" id="navDrawer" aria-label="All sections" aria-hidden="true">
@@ -4449,7 +4575,10 @@
   }
 
   function viewContact() {
-    return '<section>' +
+    // The closing call to action takes the lime field, matching where the
+    // reference puts its own: the last thing on the page, impossible to
+    // scroll past without registering.
+    return '<section class="band">' +
       secHead("contact", "Let's talk", "Open to associate and senior product roles in AI, and to conversations about voice, agentic products, or building something 0-to-1.") +
       '<div data-par="0.05"><div class="rv">' + contactGrid() + '</div></div>' +
       '<p class="lede rv" style="margin-top:32px">If you are hiring, the fastest useful thing you can do is read ' +
@@ -5005,6 +5134,36 @@
     });
   }
 
+  /* Scramble decode, the reference's signature text reveal: letters cycle
+     through random glyphs before settling into the real word.
+
+     Applied only to section headings, never to body copy. The effect makes
+     text unreadable while it runs, so on a paragraph it is a readability
+     cost paid for decoration; on a short heading it resolves before anyone
+     has started reading. chars is the mono-ish set the reference appears to
+     use — uppercase plus a few symbols, no lowercase, so the line does not
+     visibly change width as it resolves.
+
+     revealDelay holds the real text hidden for the first third, so the word
+     does not flash before it scrambles. */
+  function scrambleIn(node, delay) {
+    if (!hasGsap() || typeof window.ScrambleTextPlugin === "undefined") return null;
+    var text = (node.textContent || "").trim();
+    if (!text || text.length > 90) return null;
+    return window.gsap.to(node, {
+      duration: Math.min(0.5 + text.length * 0.018, 1.4),
+      delay: delay || 0,
+      ease: "none",
+      overwrite: "auto",
+      scrambleText: {
+        text: text,
+        chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\<>*+-",
+        revealDelay: 0.24,
+        speed: 0.5
+      }
+    });
+  }
+
   /* The GSAP form of the same behaviour. Two things it buys over the observer:
      the offsets live in one place instead of being split between a CSS rule
      and a rootMargin, and ScrollTrigger recomputes them on resize, which the
@@ -5038,16 +5197,27 @@
       else if (n.classList.contains("rv-scale")) { from.y = 26; from.scale = 0.975; }
       else from.y = 30;
 
+      // A heading inside this block decodes as the block rises. Queried once
+      // here rather than given its own observer, so the two stay in step.
+      var head = n.matches("h1, h2, h3, .sec-title") ? n : n.querySelector("h1, h2, h3, .sec-title");
+
       // Already on screen: show it now, with no scroll trigger at all. The
       // first frame is never blank.
       if (n.getBoundingClientRect().top < window.innerHeight * 0.96) {
         n.classList.add("in");
         revealTweens.push(window.gsap.from(n, from));
+        if (head) { var t0 = scrambleIn(head, delay + 0.1); if (t0) revealTweens.push(t0); }
         return;
       }
 
       n.classList.add("in");
       from.scrollTrigger = { id: "rv", trigger: n, start: "top 94%", once: true };
+      if (head) {
+        from.onStart = function () {
+          var t = scrambleIn(head, 0.08);
+          if (t) revealTweens.push(t);
+        };
+      }
       revealTweens.push(window.gsap.from(n, from));
     });
   }
@@ -5470,6 +5640,24 @@
 
   if (staticIntro) document.body.classList.add("static-intro");
   // Reveal animations are opt-in, so the page renders fully without JS.
+  /* The HUD clock shows the visitor's own local time, which is what makes it
+     read as instrumentation rather than decoration. Updated once a minute,
+     not once a second: a ticking seconds field drags the eye away from the
+     content for no gain. */
+  (function hudClock() {
+    var node = el("hudClock");
+    if (!node) return;
+    function tick() {
+      var d = new Date();
+      var h = d.getHours(), m = d.getMinutes();
+      var ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+      node.textContent = h + ":" + (m < 10 ? "0" : "") + m + " " + ampm;
+    }
+    tick();
+    setInterval(tick, 60000);
+  })();
+
   if (!staticIntro) document.body.classList.add("anim");
   // Set only once GSAP is confirmed loaded. The CSS reveal system stays live
   // until then, so a missing vendor file costs the upgrade, not the content.
