@@ -292,6 +292,28 @@
     clip-path: polygon(22px 0, 100% 0, 100% 100%, 0 100%, 0 22px);
   }
 
+  /* ---------- ambient particle field ----------
+     A canvas rather than DOM nodes: ~70 elements each getting a transform
+     every frame is layout and compositing work the browser does not need to
+     do, and on a phone it is the difference between smooth and not.
+
+     Fixed, so it costs one layer for the whole document instead of repainting
+     as the page scrolls. pointer-events: none throughout — it must never
+     intercept a click meant for the content behind it. */
+  #dust {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: block;
+  }
+  /* Everything real sits above the field. The topbar and drawer already carry
+     their own higher stacking, so only the page body needs lifting. */
+  .wrap, #stage { position: relative; z-index: 1; }
+  @media (prefers-reduced-motion: reduce) { #dust { display: none; } }
+
   /* ---------- HUD chrome ----------
      Small tracked-out mono readouts across the top rail, and a vertical
      label pinned to the right margin. Purely instrumentation: it carries the
@@ -2065,6 +2087,14 @@
     color: var(--paper);
     font: inherit;
     font-size: .98rem;
+    /* The send button beside it has always been 58px; the input itself was
+       only as tall as its text, so the primary interaction on the page was a
+       27px tap target — under the audit's 40px floor and well under
+       Material's 48dp. It escaped notice for a long time because the intro's
+       preview clone matched .ask-input first and the audit de-duplicates by
+       selector, so it was the clone's dimensions being reported. */
+    min-height: var(--md-target);
+    align-self: stretch;
   }
   .ask-input::placeholder { color: var(--dim-2); }
   .ask-send {
@@ -2540,6 +2570,9 @@
   <div class="drawer-body" id="navBody"></div>
   <a class="drawer-cta" href="#/contact">Let's connect</a>
 </nav>
+
+<!-- Ambient particle field. Fixed behind everything, never interactive. -->
+<canvas id="dust" aria-hidden="true"></canvas>
 
 <div id="spacer"></div>
 
@@ -5298,6 +5331,135 @@
     });
   }
 
+  /* ---------- ambient particle field ----------
+
+     Small drifting motes behind the whole page. Three inputs move them, which
+     is what makes the field feel attached to the page rather than pasted over
+     it:
+
+       drift    a constant slow velocity per particle, so it is alive when
+                nothing is happening
+       scroll   scroll delta pushes particles against the scroll direction,
+                scaled by depth — near ones move more than far ones, which is
+                what reads as parallax
+       pointer  particles inside a radius are pushed gently away, so the
+                cursor leaves a wake
+
+     The field also re-colours itself: over a lime band the lime motes would
+     vanish, so the target colour is tweened toward near-black whenever a band
+     covers the middle of the viewport.
+
+     It runs on GSAP's ticker like everything else — a private rAF loop here
+     would be a second clock competing with Lenis and ScrollTrigger. */
+  var dust = null;
+
+  function setupDust() {
+    var cv = el("dust");
+    if (!cv || staticIntro || !hasGsap()) return;
+    if (dust) return; // survives route changes; there is nothing per-route about it
+
+    var ctx = cv.getContext("2d", { alpha: true });
+    if (!ctx) return;
+
+    var parts = [], dpr = 1, w = 0, h = 0;
+    var pointer = { x: -9999, y: -9999, active: false };
+    var lastScroll = window.scrollY, scrollPush = 0;
+    var tone = { v: 0 }; // 0 = lime on black, 1 = ink on lime
+
+    function resize() {
+      // Cap DPR at 2: a 3x phone buffer is 2.25x the pixels for no visible
+      // gain on 1.6px dots.
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = cv.clientWidth; h = cv.clientHeight;
+      cv.width = Math.round(w * dpr);
+      cv.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Density by area, so a phone does not run a desktop particle count.
+      var target = Math.round(Math.min(Math.max((w * h) / 22000, 26), 90));
+      parts.length = 0;
+      for (var i = 0; i < target; i++) {
+        var depth = 0.35 + Math.random() * 0.65;
+        parts.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.16,
+          vy: (Math.random() - 0.5) * 0.16,
+          r: 0.7 + Math.random() * 1.5 * depth,
+          d: depth,
+          a: 0.18 + Math.random() * 0.4
+        });
+      }
+    }
+
+    function frameDust() {
+      var sy = window.scrollY;
+      // Scroll delta, damped. Raw delta on a flick throws every particle off
+      // screen in one frame.
+      scrollPush += ((sy - lastScroll) - scrollPush) * 0.18;
+      lastScroll = sy;
+
+      ctx.clearRect(0, 0, w, h);
+
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i];
+        p.x += p.vx;
+        p.y += p.vy - scrollPush * 0.045 * p.d;
+
+        if (pointer.active) {
+          var dx = p.x - pointer.x, dy = p.y - pointer.y;
+          var d2 = dx * dx + dy * dy;
+          if (d2 < 19600 && d2 > 0.01) {      // 140px radius
+            var f = (1 - Math.sqrt(d2) / 140) * 0.9;
+            var inv = 1 / Math.sqrt(d2);
+            p.x += dx * inv * f * 2.4;
+            p.y += dy * inv * f * 2.4;
+          }
+        }
+
+        // Wrap rather than respawn, so density never visibly dips.
+        if (p.x < -12) p.x = w + 12; else if (p.x > w + 12) p.x = -12;
+        if (p.y < -12) p.y = h + 12; else if (p.y > h + 12) p.y = -12;
+
+        var t = tone.v;
+        var cr = Math.round(154 + (6 - 154) * t);
+        var cg = Math.round(238 + (18 - 238) * t);
+        var cb = Math.round(48 + (10 - 48) * t);
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(" + cr + "," + cg + "," + cb + "," + (p.a * (0.55 + 0.45 * p.d)).toFixed(3) + ")";
+        ctx.arc(p.x, p.y, p.r, 0, 6.2832);
+        ctx.fill();
+      }
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+    window.addEventListener("pointermove", function (ev) {
+      if (ev.pointerType === "touch") return;  // no cursor to leave a wake
+      pointer.x = ev.clientX; pointer.y = ev.clientY; pointer.active = true;
+    }, { passive: true });
+    window.addEventListener("pointerleave", function () { pointer.active = false; }, { passive: true });
+
+    window.gsap.ticker.add(frameDust);
+    dust = { resize: resize, tone: tone };
+  }
+
+  /* Re-tint the field when a lime band takes the middle of the screen. Lime
+     motes on a lime ground are invisible, and a hard swap would pop, so the
+     colour is tweened. Sampled on scroll rather than per frame: this is a
+     hit-test against every band, which is not frame work. */
+  function dustTone() {
+    if (!dust) return;
+    var mid = window.innerHeight / 2;
+    var over = false;
+    var bands = document.querySelectorAll(".band");
+    for (var i = 0; i < bands.length; i++) {
+      var r = bands[i].getBoundingClientRect();
+      if (r.top <= mid && r.bottom >= mid) { over = true; break; }
+    }
+    window.gsap.to(dust.tone, { v: over ? 1 : 0, duration: 0.45, ease: "power2.out", overwrite: true });
+  }
+
   /* Pinned horizontal scroll.
 
      The section sticks to the viewport and vertical scroll drives the track
@@ -5637,6 +5799,7 @@
     setupMapDraw();
     bindTilt();
     setupHScroll();
+    setupDust();
     setupIntroST(isHome);
     requestAnimationFrame(function () { measure(); });
 
@@ -5644,6 +5807,7 @@
       M.started = true;
       // Passive: the listener only wakes the loop, it never blocks the scroll.
       window.addEventListener("scroll", wake, { passive: true });
+      window.addEventListener("scroll", dustTone, { passive: true });
     }
     wake();
   }
