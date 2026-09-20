@@ -202,6 +202,19 @@ function audit(isTouch) {
         const past = sp && sp.offsetHeight ? sp.offsetHeight + 400 : 400;
         window.scrollTo(0, Math.min(past, document.body.scrollHeight));
       });
+      // Scrolling the runway in one jump is a flick, and the intro now paces
+      // a flick rather than consuming it in three frames, so it can still be
+      // playing after a fixed wait that used to be long enough. Wait on the
+      // real end state rather than a timeout. This is belt-and-braces: the
+      // stage also hides itself once faded, which is what actually keeps the
+      // monitor's preview clone out of these measurements.
+      await page
+        .waitForFunction(() => {
+          const st = document.getElementById("stage");
+          if (!st || !st.classList.contains("live")) return true;
+          return parseFloat(getComputedStyle(st).opacity) === 0;
+        }, { timeout: 8000 })
+        .catch(() => warn(d.name, route, "intro never settled within 8s"));
       // reveals run 620ms plus up to 225ms of stagger; wait past that so the
       // audit measures settled state rather than a mid-transition frame
       await page.waitForTimeout(1200);

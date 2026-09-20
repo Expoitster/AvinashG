@@ -4797,7 +4797,11 @@
     var stepP = gap * 0.16;
     if (stepP > stepCap) stepP = stepCap;
     if (stepP < -stepCap) stepP = -stepCap;
-    M.introP += Math.abs(gap) < 0.0015 ? gap : stepP;
+    // Snap on a wider threshold than the loop stops on (0.0015), so the last
+    // fraction always lands inside a frame the loop is still running. Equal
+    // thresholds let the loop quit one frame before the snap and strand the
+    // intro just short of the end. 0.004 of the runway is imperceptible.
+    M.introP += Math.abs(gap) < 0.004 ? gap : stepP;
 
     var p = clamp01(M.introP);
     var e = smoothstep(p);
@@ -4821,8 +4825,17 @@
 
     // Then the desk dissolves and the real page is simply behind it.
     var fadeFrom = 0.62;
-    stage.style.opacity = (p < fadeFrom ? 1 : clamp01(1 - (p - fadeFrom) / 0.34)).toFixed(3);
-    stage.style.visibility = p >= 0.999 ? "hidden" : "visible";
+    var stageOp = p < fadeFrom ? 1 : clamp01(1 - (p - fadeFrom) / 0.34);
+    stage.style.opacity = stageOp.toFixed(3);
+    // Hide on the opacity, not on p reaching the very end. visibility is
+    // inherited, so this is what pulls the monitor's preview clone out of the
+    // accessibility tree and the tab order; leave it "visible" and the page
+    // carries a second, invisible ask bar and hero forever. Keying it to
+    // p >= 0.999 was safe only while p tracked scroll exactly — the damped
+    // follow converges asymptotically and the rAF loop stops on the same
+    // threshold the snap uses, so p could strand a hair short and the clone
+    // never left the tree.
+    stage.style.visibility = stageOp === 0 ? "hidden" : "visible";
     M.introOut = p;
 
     el("topbar").style.opacity = clamp01((p - 0.55) / 0.3).toFixed(3);
