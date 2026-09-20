@@ -109,6 +109,132 @@
   }
 
   /* ---------- top bar ---------- */
+  /* ---------- pinned horizontal track ----------
+     The reference's central scroll mechanic, and the one that is easy to miss
+     from sampled frames: vertical scroll input drives horizontal translation
+     while the section is pinned. The ground, the top rail and the menu all
+     hold still; only the card track slides. Cards sit at staggered vertical
+     offsets joined by thin connectors, so it reads as a route through the
+     work rather than a carousel.
+
+     overflow: hidden on the viewport is load-bearing. The track is wider than
+     the window by design, and without clipping here every pinned section
+     would report horizontal page overflow — which is a hard failure in the
+     device audit, and a real horizontal scrollbar for the visitor. */
+  .hs-viewport {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    /* The pinned element fills the screen and centres its track, so the cards
+       sit in the middle of the viewport for the whole pin. Sized off the top
+       rail so the first card is never tucked under it. */
+    min-height: calc(100vh - var(--topbar-h));
+    display: flex;
+    align-items: center;
+  }
+  /* A banded section pins as a whole, so its usual vertical rhythm would add
+     dead lime above and below the track for the entire scrub. */
+  .band:has(.hs-viewport) { padding-top: 0; padding-bottom: 0; }
+  /* The heading holds still while the track moves under it, which is what
+     makes the pin legible as one section rather than a stuck page. */
+  .hs-head {
+    position: absolute;
+    /* Clear the sticky rail: the pinned viewport starts at y=0, which is
+       underneath it, so a plain offset puts the eyebrow behind the nav. */
+    top: calc(var(--topbar-h) + clamp(14px, 4vh, 44px));
+    left: clamp(20px, 8vw, 140px);
+    right: clamp(20px, 8vw, 140px);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .hs-track {
+    display: flex;
+    align-items: center;
+    gap: clamp(28px, 5vw, 92px);
+    padding: 0 clamp(20px, 8vw, 140px);
+    width: max-content;
+    will-change: transform;
+  }
+  .hs-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: clamp(240px, 27vw, 380px);
+  }
+  /* The zigzag. nth-child rather than a random offset so the connectors can
+     be drawn to a predictable geometry. */
+  .hs-card:nth-child(odd)  { transform: translateY(-7%); }
+  .hs-card:nth-child(even) { transform: translateY(7%); }
+
+  .hs-shot {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--panel-2);
+    border: 1px solid var(--rule-2);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+  .hs-initial {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(56px, 7vw, 104px);
+    line-height: 1;
+    color: var(--signal);
+    opacity: .34;
+    /* the reference's halftone register, as a dot screen over the glyph */
+    background-image: radial-gradient(currentColor 34%, transparent 36%);
+    background-size: 4px 4px;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .hs-tag {
+    position: absolute;
+    left: 10px; bottom: 10px;
+    background: #06120A;
+    color: var(--signal);
+    font-family: var(--f-mono);
+    font-size: 9.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 5px 9px;
+  }
+  .hs-name {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  .hs-visit { font-size: 10px; opacity: .72; white-space: nowrap; }
+  /* Connector between consecutive cards, matching the reference's thin
+     right-angle linework. Drawn on the card so it travels with the track. */
+  .hs-card::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    width: clamp(28px, 5vw, 92px);
+    height: 1px;
+    background: currentColor;
+    opacity: .38;
+  }
+  .hs-card:last-child::after { display: none; }
+
+  /* Without JS, or under reduced motion, the track becomes an ordinary
+     swipeable row. The content is all still reachable; it simply does not
+     pin. */
+  .hs-viewport.no-pin { overflow-x: auto; }
+  .hs-viewport.no-pin .hs-track { width: max-content; }
+  @media (prefers-reduced-motion: reduce) {
+    .hs-card:nth-child(odd), .hs-card:nth-child(even) { transform: none; }
+  }
+
   /* ---------- lime band ----------
      The reference's structural signature: the ground does not gradate from
      black to lime, it swaps outright, edge to edge, and the type inverts with
@@ -4440,6 +4566,14 @@
      EXPERIENCE — one home for the whole career
      ========================================================= */
 
+  /* The card face. There are no product screenshots to show — inventing one
+     would be inventing portfolio content — so the face carries the initial in
+     the reference's dithered register instead of a fabricated mockup. */
+  function plateMark(org) {
+    var ch = (org || "?").trim().charAt(0).toUpperCase();
+    return '<span class="hs-initial" aria-hidden="true">' + esc(ch) + '</span>';
+  }
+
   function viewExperience() {
     var rows = WORK.map(function (w) {
       var points = w.inits.slice(0, 3).map(function (it) {
@@ -4476,6 +4610,22 @@
         secHead("Experience", "Six roles, in the order they happened") +
         '<p class="lede rv">Leadership, then business development, then design, then product, ' +
         'then AI, then owning the whole thing. Each one is why the next was possible.</p>' +
+      '</section>' +
+
+      // The work, as a pinned horizontal route. Same six roles and the same
+      // links as the rows below — this is a second way into the material, not
+      // a replacement for it, so nothing is lost if the pin cannot run.
+      '<section data-scene class="band">' +
+        '<div class="hs-viewport" id="hsWork">' +
+          '<div class="hs-head">' + secHead("The route", "Six roles, end to end") + '</div>' +
+          '<div class="hs-track">' + WORK.map(function (w, i) {
+            return '<a class="hs-card" href="#/work/' + w.slug + '">' +
+              '<div class="hs-shot notch">' + plateMark(w.org) + '</div>' +
+              '<div class="hs-name"><span>' + esc(w.org) + '</span>' +
+              '<span class="hs-visit">' + esc(w.when.split("—")[0].trim()) + ' →</span></div>' +
+            '</a>';
+          }).join("") + '</div>' +
+        '</div>' +
       '</section>' +
 
       '<section data-scene>' +
@@ -4614,6 +4764,8 @@
     return map[route] || "not found";
   }
 
+  var routeInTimer = null;
+
   function render() {
     var route = window.location.hash || "#/";
     var view = el("view");
@@ -4682,6 +4834,18 @@
       }
       void view.offsetWidth; // restart the animation on a repeat navigation
       view.classList.add("route-in");
+      /* The class has to come off once the animation has run.
+         routeIn uses fill-mode both, which retains its final keyframe — and
+         `transform: none` retained is a computed matrix(1,0,0,1,0,0), not
+         `none`. Any transform makes an element a containing block for
+         position: fixed, which is how ScrollTrigger pins, so leaving this on
+         silently broke every pinned section on every content route. The
+         timeout covers the 200ms animation plus its capped 120ms stagger. */
+      clearTimeout(routeInTimer);
+      routeInTimer = setTimeout(function () {
+        view.classList.remove("route-in");
+        if (hasGsap()) window.ScrollTrigger.refresh();
+      }, 420);
     }
   }
 
@@ -5134,6 +5298,58 @@
     });
   }
 
+  /* Pinned horizontal scroll.
+
+     The section sticks to the viewport and vertical scroll drives the track
+     sideways, so a single downward gesture walks along the work. The scroll
+     distance is the track's own overflow — pin for exactly as far as there is
+     track to move, never a fixed number, or the section either releases with
+     cards still off-screen or holds the visitor on a finished track.
+
+     scrub is right here where it was wrong for the desk intro: this IS a
+     scrubbed position rather than a played sequence, and the small uniform
+     lag reads as weight on a heavy track instead of as lag.
+
+     invalidateOnRefresh re-measures on resize; the track width depends on
+     clamp()-sized cards, so a baked-in distance goes wrong the moment the
+     window changes. */
+  var hsST = null;
+
+  function setupHScroll() {
+    if (hsST) { hsST.kill(); hsST = null; }
+    var vp = el("hsWork");
+    if (!vp) return;
+    var track = vp.querySelector(".hs-track");
+    if (!track) return;
+
+    // No GSAP, or reduced motion: leave it as a plain swipeable row. Every
+    // card is still reachable, it simply does not pin.
+    if (!hasGsap() || staticIntro) { vp.classList.add("no-pin"); return; }
+    vp.classList.remove("no-pin");
+
+    var distance = function () {
+      return Math.max(0, track.scrollWidth - vp.clientWidth);
+    };
+    // A track that already fits has nothing to scrub; pinning it would hold
+    // the visitor in place for no reason.
+    if (distance() <= 0) return;
+
+    hsST = window.gsap.to(track, {
+      x: function () { return -distance(); },
+      ease: "none",
+      scrollTrigger: {
+        id: "hs",
+        trigger: vp,
+        start: "top top",
+        end: function () { return "+=" + distance(); },
+        pin: true,
+        anticipatePin: 1,
+        scrub: 0.7,
+        invalidateOnRefresh: true
+      }
+    }).scrollTrigger;
+  }
+
   /* Scramble decode, the reference's signature text reveal: letters cycle
      through random glyphs before settling into the real word.
 
@@ -5420,6 +5636,7 @@
     setupReveals();
     setupMapDraw();
     bindTilt();
+    setupHScroll();
     setupIntroST(isHome);
     requestAnimationFrame(function () { measure(); });
 
