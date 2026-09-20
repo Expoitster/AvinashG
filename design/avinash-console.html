@@ -1415,6 +1415,25 @@
   body.anim .rv.in { opacity: 1; transform: translate3d(0, 0, 0); }
   body.anim .rv.instant { transition: none; transition-delay: 0s; }
 
+  /* Route changes were a hard cut: innerHTML swaps, scroll jumps to the top,
+     and everything above the fold is marked .instant so it never reveals.
+     The cut reads as a page reload rather than a move within one site.
+     This animates the sections themselves — never #view, whose inline
+     transform the intro writes every frame — as Material's fade-through:
+     out is implicit (the old markup is already gone), in is a short rise.
+     Capped stagger so a long route still finishes well inside 400ms. */
+  body.anim #view.route-in > section {
+    animation: routeIn var(--md-short) var(--md-ease) both;
+    animation-delay: calc(min(var(--s, 0), 3) * 40ms);
+  }
+  @keyframes routeIn {
+    from { opacity: 0; transform: translate3d(0, 10px, 0); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.anim #view.route-in > section { animation: none; }
+  }
+
   /* Sideways reveals only where the centred container leaves room for the
      offset. Below ~1100px the content box reaches close enough to the
      viewport edge that a 34px shift pushes past it and creates a scrollbar. */
@@ -4492,6 +4511,19 @@
 
     motionRoute(isHome);
     countUp();
+
+    // Enter transition for content routes. The overview is excluded on
+    // purpose: it owns the desk intro, and a second animation on the same
+    // frames would fight it.
+    view.classList.remove("route-in");
+    if (!isHome && !staticIntro) {
+      var secs = view.children, si = 0;
+      for (var s = 0; s < secs.length; s++) {
+        if (secs[s].tagName === "SECTION") secs[s].style.setProperty("--s", si++);
+      }
+      void view.offsetWidth; // restart the animation on a repeat navigation
+      view.classList.add("route-in");
+    }
   }
 
   /* =========================================================
@@ -4729,7 +4761,23 @@
     if (!stage || staticIntro) return;
     if (!stage.classList.contains("live")) { releaseView(); return; }
 
-    var p = clamp01(sy / introSpan());
+    /* Scroll sets a target; the intro plays toward it at its own pace.
+       Bound rigidly to scroll position, a hard trackpad flick advanced this
+       by a third per frame and the whole sequence rendered in three frames —
+       the animation existed but was never actually seen. Damped follow keeps
+       deliberate scrolling 1:1 (small deltas stay under the cap), while a
+       flick is paced to roughly 900ms so the intro is experienced either way.
+       This is not scroll-hijacking: the page keeps scrolling underneath. */
+    var targetP = clamp01(sy / introSpan());
+    if (M.introP == null) M.introP = targetP;
+    var gap = targetP - M.introP;
+    var stepCap = 1 / 55;
+    var stepP = gap * 0.16;
+    if (stepP > stepCap) stepP = stepCap;
+    if (stepP < -stepCap) stepP = -stepCap;
+    M.introP += Math.abs(gap) < 0.0015 ? gap : stepP;
+
+    var p = clamp01(M.introP);
     var e = smoothstep(p);
 
     // A slow push toward the desk, so the monitor grows as it is approached.
@@ -4819,7 +4867,11 @@
       if (p.last !== t) { p.el.style.transform = t; p.last = t; }
     }
 
-    if (!settled) wake();
+    // The intro runs on its own clock, so the loop has to outlive the scroll
+    // that started it — otherwise a flick freezes the sequence part-played.
+    var introBusy = M.intro && el("stage") && el("stage").classList.contains("live") &&
+      Math.abs(clamp01(window.scrollY / introSpan()) - (M.introP == null ? 0 : M.introP)) > 0.0015;
+    if (!settled || introBusy) wake();
   }
 
   /* ---------- reveals ---------- */
