@@ -36,3 +36,7 @@ yarn-error.log*
 /rag/worker/node_modules/
 /rag/worker/.dev.vars
 /rag/worker/dist/
+
+# Vite build output for the React rewrite (app/). The published site is
+# still docs/index.html, generated from design/avinash-console.html.
+app/dist/
