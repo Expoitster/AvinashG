@@ -3,6 +3,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;450;500;600&display=swap">
 
+<!-- GSAP drives the scroll-linked motion. Pinned to an exact version: this is
+     loaded as a plain script, not bundled, so there is nothing to lock a range
+     for us. scripts/build-site.mjs rewrites these two URLs to vendored copies
+     under docs/vendor/ in the built page, so the deployed site and the offline
+     QA harness never depend on a network fetch. The CDN URLs are what the
+     Claude Artifact host sees, where the source is previewed as a fragment. -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+
 <style>
   :root {
     --ground: #FAF8F3;
@@ -1402,8 +1411,13 @@
   /* ---------- motion system ---------- */
 
   /* Reveals are opt-in: without JS every element stays at its resting,
-     fully visible state, so the page is never stuck blank. */
-  body.anim .rv {
+     fully visible state, so the page is never stuck blank. The same holds
+     if GSAP fails to load — body.gsap is only set once it is confirmed
+     present, so a missing vendor file degrades to this CSS rather than to
+     a page of permanently invisible content.
+     :not(.gsap) because both systems animate opacity and transform, and a
+     CSS transition left in place would re-animate every value GSAP writes. */
+  body.anim:not(.gsap) .rv {
     opacity: 0;
     transform: translate3d(0, 30px, 0);
     transition:
@@ -1412,8 +1426,8 @@
     /* capped so a long list still finishes revealing promptly */
     transition-delay: calc(min(var(--i, 0), 5) * 45ms);
   }
-  body.anim .rv.in { opacity: 1; transform: translate3d(0, 0, 0); }
-  body.anim .rv.instant { transition: none; transition-delay: 0s; }
+  body.anim:not(.gsap) .rv.in { opacity: 1; transform: translate3d(0, 0, 0); }
+  body.anim:not(.gsap) .rv.instant { transition: none; transition-delay: 0s; }
 
   /* Route changes were a hard cut: innerHTML swaps, scroll jumps to the top,
      and everything above the fold is marked .instant so it never reveals.
@@ -1437,13 +1451,13 @@
   /* Sideways reveals only where the centred container leaves room for the
      offset. Below ~1100px the content box reaches close enough to the
      viewport edge that a 34px shift pushes past it and creates a scrollbar. */
-  body.anim .rv-l, body.anim .rv-r { transform: translate3d(0, 30px, 0); }
+  body.anim:not(.gsap) .rv-l, body.anim:not(.gsap) .rv-r { transform: translate3d(0, 30px, 0); }
   @media (min-width: 1100px) {
-    body.anim .rv-l { transform: translate3d(-34px, 0, 0); }
-    body.anim .rv-r { transform: translate3d(34px, 0, 0); }
+    body.anim:not(.gsap) .rv-l { transform: translate3d(-34px, 0, 0); }
+    body.anim:not(.gsap) .rv-r { transform: translate3d(34px, 0, 0); }
   }
-  body.anim .rv-scale { transform: translate3d(0, 26px, 0) scale(.975); }
-  body.anim .rv-scale.in { transform: translate3d(0, 0, 0) scale(1); }
+  body.anim:not(.gsap) .rv-scale { transform: translate3d(0, 26px, 0) scale(.975); }
+  body.anim:not(.gsap) .rv-scale.in { transform: translate3d(0, 0, 0) scale(1); }
 
   .par { will-change: transform; }
 
@@ -4891,6 +4905,15 @@
 
   var revealIO = null;
   var seenIO = null;
+  var revealTweens = [];
+
+  /* GSAP is a plain script tag here, not a bundle, so it can simply be absent:
+     a vendored file that failed to copy, or a stale cached page. Everything
+     GSAP-driven checks this rather than assuming, and falls back to the CSS
+     reveal system, which is why body.gsap is set from the same test. */
+  function hasGsap() {
+    return typeof window.gsap !== "undefined" && typeof window.ScrollTrigger !== "undefined";
+  }
 
   function setupReveals() {
     if (revealIO) revealIO.disconnect();
@@ -4910,6 +4933,8 @@
       return;
     }
 
+    if (hasGsap()) { setupRevealsGsap(items); return; }
+
     revealIO = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (!en.isIntersecting) return;
@@ -4925,6 +4950,53 @@
       } else {
         revealIO.observe(n);
       }
+    });
+  }
+
+  /* The GSAP form of the same behaviour. Two things it buys over the observer:
+     the offsets live in one place instead of being split between a CSS rule
+     and a rootMargin, and ScrollTrigger recomputes them on resize, which the
+     observer never did.
+
+     The motion is deliberately identical to what the CSS produced — 0.62s on
+     the same curve, 30px rise, capped 45ms stagger — because this is a port,
+     not a redesign. Changing the feel and the mechanism in one step would
+     leave nothing to compare against if it looked wrong. */
+  function setupRevealsGsap(items) {
+    for (var t = 0; t < revealTweens.length; t++) revealTweens[t].kill();
+    revealTweens = [];
+    // A route change replaces the DOM under ScrollTrigger; its stored start
+    // and end offsets belong to markup that no longer exists.
+    window.ScrollTrigger.getAll().forEach(function (st) {
+      if (st.vars && st.vars.id === "rv") st.kill();
+    });
+
+    Array.prototype.forEach.call(items, function (n) {
+      var cs = getComputedStyle(n);
+      var i = parseFloat(cs.getPropertyValue("--i")) || 0;
+      var delay = Math.min(i, 5) * 0.045;
+
+      var from = { opacity: 0, duration: 0.62, ease: "expo.out", delay: delay, overwrite: "auto" };
+      // Sideways variants only apply above 1100px; below it the CSS keeps them
+      // vertical because a 34px shift reaches past the content box and opens a
+      // scrollbar. Reading the class here has to respect the same breakpoint.
+      var wide = window.matchMedia("(min-width: 1100px)").matches;
+      if (n.classList.contains("rv-l") && wide) from.x = -34;
+      else if (n.classList.contains("rv-r") && wide) from.x = 34;
+      else if (n.classList.contains("rv-scale")) { from.y = 26; from.scale = 0.975; }
+      else from.y = 30;
+
+      // Already on screen: show it now, with no scroll trigger at all. The
+      // first frame is never blank.
+      if (n.getBoundingClientRect().top < window.innerHeight * 0.96) {
+        n.classList.add("in");
+        revealTweens.push(window.gsap.from(n, from));
+        return;
+      }
+
+      n.classList.add("in");
+      from.scrollTrigger = { id: "rv", trigger: n, start: "top 94%", once: true };
+      revealTweens.push(window.gsap.from(n, from));
     });
   }
 
@@ -5200,6 +5272,12 @@
   if (staticIntro) document.body.classList.add("static-intro");
   // Reveal animations are opt-in, so the page renders fully without JS.
   if (!staticIntro) document.body.classList.add("anim");
+  // Set only once GSAP is confirmed loaded. The CSS reveal system stays live
+  // until then, so a missing vendor file costs the upgrade, not the content.
+  if (!staticIntro && hasGsap()) {
+    document.body.classList.add("gsap");
+    window.gsap.defaults({ ease: "power3.out", duration: 0.3 });
+  }
 
   /* Reaching for anything while the page is still a preview lands the intro
      instead. The first tap is spent settling — the targets under it are a

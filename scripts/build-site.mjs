@@ -7,7 +7,7 @@
  * viewport meta in particular has to be added here or the site renders at a
  * 980px fallback width on phones.
  */
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -15,7 +15,35 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = resolve(root, "design/avinash-console.html");
 const OUT = resolve(root, "docs/index.html");
 
-const body = readFileSync(SRC, "utf8");
+let body = readFileSync(SRC, "utf8");
+
+/* GSAP is vendored rather than fetched.
+ *
+ * The source carries CDN URLs because it is also previewed as a fragment in
+ * the Claude Artifact host, which has no build step to rewrite anything. The
+ * deployed site should not depend on a third party staying up, and the QA
+ * harness loads the built file over file:// with no network at all — a CDN
+ * script there would silently fail and every motion assertion would go with
+ * it. So the build copies the exact installed version next to the page and
+ * points the tags at it. Version drift is impossible: these are the same
+ * files npm resolved, not a URL that might serve something else later.
+ */
+const VENDOR = [
+  ["gsap/dist/gsap.min.js", "gsap.min.js"],
+  ["gsap/dist/ScrollTrigger.min.js", "ScrollTrigger.min.js"],
+];
+const vendorDir = resolve(root, "docs/vendor");
+mkdirSync(vendorDir, { recursive: true });
+for (const [from, to] of VENDOR) {
+  copyFileSync(resolve(root, "node_modules", from), resolve(vendorDir, to));
+  body = body.replace(
+    new RegExp("https://cdn\\.jsdelivr\\.net/npm/gsap@[\\d.]+/dist/" + to.replace(".", "\\.")),
+    "vendor/" + to
+  );
+}
+if (body.includes("cdn.jsdelivr.net")) {
+  throw new Error("a GSAP CDN URL survived vendoring — check the version in the source matches the rewrite");
+}
 
 const DESCRIPTION =
   "Avinash Garudapalli — AI product manager. Voice AI, generative and " +
