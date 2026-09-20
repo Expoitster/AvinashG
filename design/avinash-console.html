@@ -5362,29 +5362,28 @@
     if (!ctx) return;
 
     var parts = [], dpr = 1, w = 0, h = 0;
-    var pointer = { x: -9999, y: -9999, active: false };
+    var pointer = { x: -9999, y: -9999, tx: -9999, ty: -9999, active: false };
     var lastScroll = window.scrollY, scrollPush = 0;
-    var tone = { v: 0 }; // 0 = lime on black, 1 = ink on lime
+    var tone = { v: 0 };   // 0 = lime on black, 1 = ink on lime
+    var t = 0;             // flow-field clock
 
     function resize() {
       // Cap DPR at 2: a 3x phone buffer is 2.25x the pixels for no visible
-      // gain on 1.6px dots.
+      // gain on sub-2px dots.
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       w = cv.clientWidth; h = cv.clientHeight;
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // Density by area, so a phone does not run a desktop particle count.
-      var target = Math.round(Math.min(Math.max((w * h) / 22000, 26), 90));
+      var target = Math.round(Math.min(Math.max((w * h) / 20000, 30), 100));
       parts.length = 0;
       for (var i = 0; i < target; i++) {
         var depth = 0.35 + Math.random() * 0.65;
         parts.push({
           x: Math.random() * w,
           y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.16,
-          vy: (Math.random() - 0.5) * 0.16,
+          vx: 0, vy: 0,
           r: 0.7 + Math.random() * 1.5 * depth,
           d: depth,
           a: 0.18 + Math.random() * 0.4
@@ -5392,39 +5391,73 @@
       }
     }
 
+    /* The flow field.
+
+       Direction at any point comes from two sine waves crossed at different
+       frequencies and drifting in time. It is not true Perlin noise, but it
+       has the property that matters here: neighbouring points return
+       neighbouring angles, so particles that are near each other sweep along
+       together in bands and eddies rather than each wandering independently.
+       That coherence is what makes a field read as soothing instead of
+       twitchy — random per-particle drift at this speed just looks like
+       static.
+
+       Cheap on purpose: two sin and one cos per particle per frame, no
+       lookup table, no allocation. */
+    function flowAngle(x, y) {
+      return (Math.sin(x * 0.0022 + t) + Math.cos(y * 0.0027 - t * 0.8)) * 1.9;
+    }
+
     function frameDust() {
+      t += 0.0016;
+
       var sy = window.scrollY;
-      // Scroll delta, damped. Raw delta on a flick throws every particle off
-      // screen in one frame.
       scrollPush += ((sy - lastScroll) - scrollPush) * 0.18;
       lastScroll = sy;
+
+      // The pointer is chased rather than snapped to, so a fast flick across
+      // the screen draws a curve through the field instead of teleporting.
+      if (pointer.active) {
+        pointer.x += (pointer.tx - pointer.x) * 0.12;
+        pointer.y += (pointer.ty - pointer.y) * 0.12;
+      }
 
       ctx.clearRect(0, 0, w, h);
 
       for (var i = 0; i < parts.length; i++) {
         var p = parts[i];
-        p.x += p.vx;
-        p.y += p.vy - scrollPush * 0.045 * p.d;
+
+        // Steer toward the field, deeper particles moving faster.
+        var ang = flowAngle(p.x, p.y);
+        var speed = 0.52 + p.d * 0.78;
+        p.vx += (Math.cos(ang) * speed - p.vx) * 0.045;
+        p.vy += (Math.sin(ang) * speed - p.vy) * 0.045;
 
         if (pointer.active) {
-          var dx = p.x - pointer.x, dy = p.y - pointer.y;
-          var d2 = dx * dx + dy * dy;
-          if (d2 < 19600 && d2 > 0.01) {      // 140px radius
-            var f = (1 - Math.sqrt(d2) / 140) * 0.9;
-            var inv = 1 / Math.sqrt(d2);
-            p.x += dx * inv * f * 2.4;
-            p.y += dy * inv * f * 2.4;
+          var dx = pointer.x - p.x, dy = pointer.y - p.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 260 && dist > 0.5) {
+            // Travel WITH the pointer: particles inside the radius are drawn
+            // along after it, strongest near the middle and easing to nothing
+            // at the edge so there is no hard boundary where motion stops.
+            var pull = (1 - dist / 260);
+            pull = pull * pull * 1.15;
+            p.vx += (dx / dist) * pull;
+            p.vy += (dy / dist) * pull;
           }
         }
+
+        p.x += p.vx;
+        p.y += p.vy - scrollPush * 0.05 * p.d;
 
         // Wrap rather than respawn, so density never visibly dips.
         if (p.x < -12) p.x = w + 12; else if (p.x > w + 12) p.x = -12;
         if (p.y < -12) p.y = h + 12; else if (p.y > h + 12) p.y = -12;
 
-        var t = tone.v;
-        var cr = Math.round(154 + (6 - 154) * t);
-        var cg = Math.round(238 + (18 - 238) * t);
-        var cb = Math.round(48 + (10 - 48) * t);
+        var tv = tone.v;
+        var cr = Math.round(154 + (6 - 154) * tv);
+        var cg = Math.round(238 + (18 - 238) * tv);
+        var cb = Math.round(48 + (10 - 48) * tv);
         ctx.beginPath();
         ctx.fillStyle = "rgba(" + cr + "," + cg + "," + cb + "," + (p.a * (0.55 + 0.45 * p.d)).toFixed(3) + ")";
         ctx.arc(p.x, p.y, p.r, 0, 6.2832);
@@ -5432,12 +5465,24 @@
       }
     }
 
+    function track(ev) {
+      pointer.tx = ev.clientX; pointer.ty = ev.clientY;
+      if (!pointer.active) { pointer.x = pointer.tx; pointer.y = pointer.ty; }
+      pointer.active = true;
+    }
+
     resize();
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", function (ev) {
-      if (ev.pointerType === "touch") return;  // no cursor to leave a wake
-      pointer.x = ev.clientX; pointer.y = ev.clientY; pointer.active = true;
+    // Touch counts. A finger is the only pointer most visitors have, and
+    // excluding it meant the effect simply did not exist on a phone.
+    window.addEventListener("pointermove", track, { passive: true });
+    window.addEventListener("pointerdown", track, { passive: true });
+    window.addEventListener("touchmove", function (ev) {
+      if (ev.touches && ev.touches[0]) track(ev.touches[0]);
     }, { passive: true });
+    // A lifted finger should leave the wake to dissipate into the field
+    // rather than cut it dead.
+    window.addEventListener("pointerup", function () { pointer.active = false; }, { passive: true });
     window.addEventListener("pointerleave", function () { pointer.active = false; }, { passive: true });
 
     window.gsap.ticker.add(frameDust);
