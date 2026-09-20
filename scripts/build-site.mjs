@@ -39,8 +39,10 @@ const VENDOR = [
    "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"],
   ["lenis/dist/lenis.min.js", "lenis.min.js",
    "https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"],
-  ["split-type/umd/index.min.js", "split-type.min.js",
-   "https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"],
+  ["gsap/dist/SplitText.min.js", "SplitText.min.js",
+   "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"],
+  ["gsap/dist/ScrambleTextPlugin.min.js", "ScrambleTextPlugin.min.js",
+   "https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrambleTextPlugin.min.js"],
 ];
 const vendorDir = resolve(root, "docs/vendor");
 mkdirSync(vendorDir, { recursive: true });
@@ -68,16 +70,16 @@ const page = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="${DESCRIPTION}">
-<meta name="theme-color" content="#FAF8F3">
+<meta name="theme-color" content="#000000">
 <link rel="canonical" href="${SITE_URL}">
 <meta property="og:url" content="${SITE_URL}">
 <meta property="og:title" content="Avinash Garudapalli">
 <meta property="og:description" content="${DESCRIPTION}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23FAF8F3'/><circle cx='16' cy='16' r='7' fill='%23B0690F'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000000'/><circle cx='16' cy='16' r='7' fill='%239AEE30'/></svg>">
 <style>
-  :root { color-scheme: light; }
+  :root { color-scheme: dark; }
   html, body { margin: 0; }
   img { max-width: 100%; }
   [hidden] { display: none !important; }
