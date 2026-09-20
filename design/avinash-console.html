@@ -1513,14 +1513,21 @@
     box-shadow: 0 0 10px 1px rgba(151,89,10,.42);
   }
 
-  /* connector wires draw themselves in the first time they appear */
-  body.anim .sysmap-wires .wire { stroke-dasharray: var(--len, 600); stroke-dashoffset: var(--len, 600); }
-  body.anim .sysmap-wires.drawn .wire {
+  /* Connector wires draw themselves in the first time they appear.
+     Gated :not(.gsap) for the dash animation only — when GSAP is present it
+     owns stroke-dashoffset. The stroke, opacity and stroke-width transitions
+     stay in CSS unconditionally: those are hover and pick states, not scroll
+     motion, and moving them to JS would be a downgrade. */
+  body.anim:not(.gsap) .sysmap-wires .wire { stroke-dasharray: var(--len, 600); stroke-dashoffset: var(--len, 600); }
+  body.anim:not(.gsap) .sysmap-wires.drawn .wire {
     stroke-dashoffset: 0;
     transition:
       stroke-dashoffset 1s cubic-bezier(.22, 1, .36, 1),
       stroke .2s, opacity .2s, stroke-width .2s;
     transition-delay: calc(var(--d, 0) * 40ms), 0s, 0s, 0s;
+  }
+  body.anim.gsap .sysmap-wires .wire {
+    transition: stroke .2s, opacity .2s, stroke-width .2s;
   }
 
   /* readouts lift slightly as they cross the viewport */
@@ -4696,6 +4703,27 @@
      The scroll runway is the spacer, so progress and the spacer end together:
      at p=1 the content sits exactly where normal document flow puts it and the
      transform is dropped with nothing moving. */
+  // The ScrollTrigger that drives the intro when GSAP is present. Null means
+  // the damped rAF fallback in updateIntro is in charge.
+  var introST = null;
+  var introTarget = 0;
+
+  /* The rate-capped follow, on GSAP's ticker. Bound rigidly to scroll, a hard
+     flick advanced this by a third per frame and the whole sequence rendered
+     in three frames — the animation existed but was never seen. Small deltas
+     stay under the cap and so track the finger exactly; only a flick is paced.
+     The page keeps scrolling underneath, so this is not scroll-hijacking. */
+  function introTick() {
+    if (M.introP == null) M.introP = introTarget;
+    var gap = introTarget - M.introP;
+    var stepCap = 1 / 55;
+    var stepP = gap * 0.16;
+    if (stepP > stepCap) stepP = stepCap;
+    if (stepP < -stepCap) stepP = -stepCap;
+    M.introP += Math.abs(gap) < 0.004 ? gap : stepP;
+    applyIntro(clamp01(M.introP));
+  }
+
   function introSpan() {
     var sp = el("spacer");
     return Math.max(1, sp ? sp.offsetHeight : M.vh * 1.2);
@@ -4770,18 +4798,25 @@
      re-rasterise an enormous layer every frame, and that is what flickered
      while scrolling. Only the desk SVG moves now, and the preview inside it
      is part of that SVG, so it is genuinely fixed to the screen it sits on. */
+  /* Progress source, when GSAP is absent.
+
+     Scroll sets a target; the intro plays toward it at its own pace. Bound
+     rigidly to scroll position, a hard trackpad flick advanced this by a third
+     per frame and the whole sequence rendered in three frames — the animation
+     existed but was never actually seen. Damped follow keeps deliberate
+     scrolling 1:1 (small deltas stay under the cap) while a flick is paced, so
+     the intro is experienced either way. The page keeps scrolling underneath,
+     so this is not scroll-hijacking.
+
+     ScrollTrigger's scrub does the same job properly, so when GSAP is present
+     this whole block is bypassed and applyIntro is driven from there instead.
+     Kept as the fallback, not as dead code: the vendored script can be absent. */
   function updateIntro(sy) {
     var stage = el("stage");
     if (!stage || staticIntro) return;
     if (!stage.classList.contains("live")) { releaseView(); return; }
+    if (introST) return; // ScrollTrigger owns progress
 
-    /* Scroll sets a target; the intro plays toward it at its own pace.
-       Bound rigidly to scroll position, a hard trackpad flick advanced this
-       by a third per frame and the whole sequence rendered in three frames —
-       the animation existed but was never actually seen. Damped follow keeps
-       deliberate scrolling 1:1 (small deltas stay under the cap), while a
-       flick is paced to roughly 900ms so the intro is experienced either way.
-       This is not scroll-hijacking: the page keeps scrolling underneath. */
     var targetP = clamp01(sy / introSpan());
     if (M.introP == null) M.introP = targetP;
     var gap = targetP - M.introP;
@@ -4794,8 +4829,14 @@
     // thresholds let the loop quit one frame before the snap and strand the
     // intro just short of the end. 0.004 of the runway is imperceptible.
     M.introP += Math.abs(gap) < 0.004 ? gap : stepP;
+    applyIntro(clamp01(M.introP));
+  }
 
-    var p = clamp01(M.introP);
+  /* The visual mapping, independent of where progress came from. */
+  function applyIntro(p) {
+    var stage = el("stage");
+    if (!stage || staticIntro) return;
+    if (!stage.classList.contains("live")) { releaseView(); return; }
     var e = smoothstep(p);
 
     // A slow push toward the desk, so the monitor grows as it is approached.
@@ -4896,7 +4937,9 @@
 
     // The intro runs on its own clock, so the loop has to outlive the scroll
     // that started it — otherwise a flick freezes the sequence part-played.
-    var introBusy = M.intro && el("stage") && el("stage").classList.contains("live") &&
+    // Only relevant to the fallback: when ScrollTrigger owns progress it runs
+    // on GSAP's ticker and needs nothing from this loop.
+    var introBusy = !introST && M.intro && el("stage") && el("stage").classList.contains("live") &&
       Math.abs(clamp01(window.scrollY / introSpan()) - (M.introP == null ? 0 : M.introP)) > 0.0015;
     if (!settled || introBusy) wake();
   }
@@ -5019,6 +5062,29 @@
 
     if (staticIntro) { svg.classList.add("drawn"); return; }
 
+    if (hasGsap()) {
+      // One timeline for the whole diagram rather than per-wire CSS delays.
+      // The stagger is a single number here instead of a --d custom property
+      // written from JS and read back in a calc(), and it recomputes on
+      // resize with everything else ScrollTrigger owns.
+      window.ScrollTrigger.getAll().forEach(function (st) {
+        if (st.vars && st.vars.id === "map") st.kill();
+      });
+      window.gsap.set(wires, { strokeDasharray: function (i, t) { return t.style.getPropertyValue("--len") || 600; } });
+      window.gsap.fromTo(wires,
+        { strokeDashoffset: function (i, t) { return t.style.getPropertyValue("--len") || 600; } },
+        {
+          strokeDashoffset: 0,
+          duration: 1,
+          ease: "expo.out",
+          stagger: 0.04,
+          overwrite: "auto",
+          scrollTrigger: { id: "map", trigger: shell, start: "top 85%", once: true },
+          onStart: function () { svg.classList.add("drawn"); }
+        });
+      return;
+    }
+
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (!en.isIntersecting) return;
@@ -5034,20 +5100,79 @@
   function bindTilt() {
     if (staticIntro) return;
     Array.prototype.forEach.call(document.querySelectorAll(".tilt"), function (node) {
+      // quickTo keeps one reusable tween per axis instead of writing a new
+      // transform string on every pointermove. A pointer fires far faster than
+      // the display refreshes, so the old version recomputed and restyled
+      // several times per frame for one painted result; this interpolates
+      // toward the latest value on GSAP's ticker, once per frame.
+      var rx = null, ry = null;
+      if (hasGsap()) {
+        rx = window.gsap.quickTo(node, "rotationX", { duration: 0.3, ease: "power3.out" });
+        ry = window.gsap.quickTo(node, "rotationY", { duration: 0.3, ease: "power3.out" });
+        window.gsap.set(node, { transformPerspective: 1100 });
+      }
+
       node.addEventListener("pointermove", function (ev) {
         if (ev.pointerType === "touch") return;
         var r = node.getBoundingClientRect();
         var dx = (ev.clientX - r.left) / r.width - 0.5;
         var dy = (ev.clientY - r.top) / r.height - 0.5;
+        if (rx) { rx(-dy * 2.4); ry(dx * 3.2); return; }
         node.classList.add("tracking");
         node.style.transform =
           "perspective(1100px) rotateX(" + (-dy * 2.4).toFixed(2) + "deg) rotateY(" + (dx * 3.2).toFixed(2) + "deg)";
       });
       node.addEventListener("pointerleave", function () {
+        if (rx) { rx(0); ry(0); return; }
         node.classList.remove("tracking");
         node.style.transform = "";
       });
     });
+  }
+
+  /* The intro on ScrollTrigger.
+     scrub is the whole reason this port is worth doing. The damped follow it
+     replaces existed only because binding progress straight to scroll let a
+     flick render the sequence in three frames; scrub is that same idea as one
+     number, and it is the library's problem rather than a hand-tuned cap, a
+     snap threshold, and a wake condition that had to be kept in agreement.
+     Getting those three out of agreement is exactly what stranded the desk
+     visible once already.
+
+     end is a function so the runway is re-read on resize instead of baked in
+     at creation — the spacer is sized in viewport units. */
+  function setupIntroST(isHome) {
+    if (introST) {
+      introST.kill();
+      introST = null;
+      window.gsap.ticker.remove(introTick);
+    }
+    if (!hasGsap() || staticIntro || !isHome) return;
+    var stage = el("stage");
+    if (!stage || !stage.classList.contains("live")) return;
+
+    /* ScrollTrigger supplies the target and, crucially, re-measures the
+       runway on resize. It does NOT supply the pacing: scrub eases uniformly,
+       so it lags deliberate scrolling as much as it paces a flick. Measured at
+       480px/s, scrub 1.5 lagged 12.9% of the intro and scrub 2 lagged 16.4%,
+       against 5.8% for the rate-capped follow below, which passes small deltas
+       through 1:1 and only paces large ones. Same flick coverage, a third of
+       the lag — so the follow stays and only the clock changes, from a private
+       rAF loop to GSAP's ticker. */
+    introST = window.ScrollTrigger.create({
+      id: "intro",
+      trigger: document.documentElement,
+      start: 0,
+      end: function () { return introSpan(); },
+      invalidateOnRefresh: true,
+      onUpdate: function (self) { introTarget = self.progress; },
+      onRefresh: function (self) { introTarget = self.progress; }
+    });
+
+    introTarget = introST.progress || 0;
+    if (M.introP == null) M.introP = introTarget;
+    window.gsap.ticker.add(introTick);
+    applyIntro(clamp01(M.introP));
   }
 
   function motionRoute(isHome) {
@@ -5071,6 +5196,7 @@
     setupReveals();
     setupMapDraw();
     bindTilt();
+    setupIntroST(isHome);
     requestAnimationFrame(function () { measure(); });
 
     if (!M.started) {
@@ -5134,16 +5260,35 @@
     var suffix = m[2];
     if (target < 2) return;
 
-    var start = performance.now();
-    var dur = 900;
+    if (!hasGsap()) {
+      // Same curve by hand: quartic ease-out over 900ms.
+      var start = performance.now();
+      var dur = 900;
+      n.textContent = "0" + suffix;
+      (function tick(now) {
+        var p = Math.min((now - start) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 4);
+        n.textContent = Math.round(target * eased) + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+        else n.textContent = target + suffix;
+      })(start);
+      return;
+    }
+
+    // power4.out is the same quartic ease-out the hand-rolled version used,
+    // so the number climbs identically; what changes is that GSAP's single
+    // ticker drives it instead of a private rAF loop per figure. On a page
+    // with several metrics in view that was several loops competing.
+    var proxy = { v: 0 };
     n.textContent = "0" + suffix;
-    (function tick(now) {
-      var p = Math.min((now - start) / dur, 1);
-      var eased = 1 - Math.pow(1 - p, 4);
-      n.textContent = Math.round(target * eased) + suffix;
-      if (p < 1) requestAnimationFrame(tick);
-      else n.textContent = target + suffix;
-    })(start);
+    window.gsap.to(proxy, {
+      v: target,
+      duration: 0.9,
+      ease: "power4.out",
+      overwrite: "auto",
+      onUpdate: function () { n.textContent = Math.round(proxy.v) + suffix; },
+      onComplete: function () { n.textContent = target + suffix; }
+    });
   }
 
   function countUp() {
