@@ -1148,6 +1148,26 @@
     transform-origin: 50% 40%;
     will-change: transform, opacity;
   }
+  /* Portrait screens. At 96vw the desk was 296px of an 851px phone — a third
+     of the screen, floating in black.
+
+     It cannot simply cover: the scene is 1180x926, a landscape composition,
+     and filling a 393x851 phone by height needs 1140px of width, which crops
+     375px off each side and eats the monitor's own text. Tested at 134vh and
+     170vw, both cut "Avinash" to "vinash".
+
+     118vw is the most that can be given without cutting into the screen
+     content — it lifts the desk to about 43% of the height and crops only the
+     scene's own margins. Genuinely filling a portrait phone would mean
+     framing the monitor alone rather than the whole desk, which is a
+     different composition, not a size.
+
+     flex: none is required, not decorative: .stage is a flex container and an
+     item shrinks to fit by default, so a wider width is computed and then
+     immediately shrunk back to the viewport. */
+  @media (max-aspect-ratio: 9 / 13) {
+    .stage-inner { width: 118vw; flex: none; }
+  }
   .scene { display: block; width: 100%; height: auto; }
 
   /* A single Material-style chip: label and icon on one line, the icon in its
@@ -1705,7 +1725,7 @@
   [data-scene] { --p: .5; }
 
   @media (prefers-reduced-motion: reduce) {
-    body.anim [data-scene] * { transform: none !important; }
+    body.anim [data-scene] * { transform: none !important; translate: none !important; }
   }
 
   /* ---------- motion system ---------- */
@@ -5327,10 +5347,18 @@
       for (var mi = 0; mi < sc.movers.length; mi++) {
         var mv = sc.movers[mi];
         if (!mv.rate) continue;   // registered for clarity, moves on its own
-        var t = "translate3d(0," + (off * mv.rate).toFixed(2) + "px,0)";
+        /* The independent `translate` property, not `transform`.
+           Ten of the fourteen elements this loop moves are also GSAP reveal
+           targets, and GSAP writes `transform`. Two writers on one property,
+           sixty times a second, overwrite each other frame by frame — which
+           is exactly the flicker the user reported. `translate`, `rotate` and
+           `scale` are separate properties that compose with `transform`
+           rather than replacing it, so the reveal and the parallax can both
+           run on the same element without either clobbering the other. */
+        var t = "0 " + (off * mv.rate).toFixed(2) + "px";
         // Skip the write when the value has not changed: an identical style
         // assignment still invalidates.
-        if (mv.last !== t) { mv.el.style.transform = t; mv.last = t; }
+        if (mv.last !== t) { mv.el.style.translate = t; mv.last = t; }
       }
     }
 
@@ -5675,7 +5703,17 @@
      not a redesign. Changing the feel and the mechanism in one step would
      leave nothing to compare against if it looked wrong. */
   function setupRevealsGsap(items) {
-    for (var t = 0; t < revealTweens.length; t++) revealTweens[t].kill();
+    /* Complete before killing. These are from() tweens, so killing one
+       mid-flight abandons the element wherever the tween had reached — which
+       for a reveal means stranded at opacity 0, invisible and permanent. It
+       happens whenever this re-runs while a reveal is still playing, which a
+       route change or a ScrollTrigger.refresh will do. progress(1) lands the
+       element on its natural resting state first. */
+    for (var t = 0; t < revealTweens.length; t++) {
+      var tw = revealTweens[t];
+      if (tw.progress() < 1) tw.progress(1);
+      tw.kill();
+    }
     revealTweens = [];
     // A route change replaces the DOM under ScrollTrigger; its stored start
     // and end offsets belong to markup that no longer exists.
