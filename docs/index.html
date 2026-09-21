@@ -158,19 +158,6 @@
   /* A banded section pins as a whole, so its usual vertical rhythm would add
      dead lime above and below the track for the entire scrub. */
   .band:has(.hs-viewport) { padding-top: 0; padding-bottom: 0; }
-  /* The heading holds still while the track moves under it, which is what
-     makes the pin legible as one section rather than a stuck page. */
-  .hs-head {
-    position: absolute;
-    /* Clear the sticky rail: the pinned viewport starts at y=0, which is
-       underneath it, so a plain offset puts the eyebrow behind the nav. */
-    top: calc(var(--topbar-h) + clamp(14px, 4vh, 44px));
-    left: clamp(20px, 8vw, 140px);
-    right: clamp(20px, 8vw, 140px);
-    z-index: 2;
-    pointer-events: none;
-  }
-
   .hs-track {
     display: flex;
     align-items: center;
@@ -4727,7 +4714,6 @@
       // a replacement for it, so nothing is lost if the pin cannot run.
       '<section data-scene class="band">' +
         '<div class="hs-viewport" id="hsWork">' +
-          '<div class="hs-head">' + secHead("The route", "Six roles, end to end") + '</div>' +
           '<div class="hs-track">' + WORK.map(function (w, i) {
             return '<a class="hs-card" href="#/work/' + w.slug + '">' +
               '<div class="hs-shot notch">' + plateMark(w.org) + '</div>' +
