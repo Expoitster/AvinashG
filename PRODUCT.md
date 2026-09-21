@@ -51,15 +51,31 @@ Chat360?") can be asked instead of hunted for.
 - One authored HTML file (`design/avinash-console.html`) containing markup,
   styles, data, views, and the motion engine; built to `docs/index.html` for
   GitHub Pages. No framework, no bundler, no build step for the site's own JS.
+- Third-party motion libraries (GSAP with ScrollTrigger, SplitText and
+  ScrambleText; Lenis) load as plain script tags. The source references them by
+  pinned CDN URL, because it is also previewed as a fragment in a host with no
+  build step; the build copies the installed files to `docs/vendor/` and
+  repoints the tags, so the deployed site never depends on a third party and
+  the audit — which loads the built page over `file://` with no network — gets
+  real libraries rather than a silently failed fetch. The build fails if a CDN
+  URL survives.
 - A retrieval assistant backed by a Cloudflare Worker and Gemini. It answers
   only from indexed site content and says so plainly when a question falls
   outside it. A per-IP throttle sits in front of the model call.
 - The index is built by rendering every route, so it cannot drift from what is
   actually published.
-- Quality is asserted mechanically, not by eye: an audit drives 10 viewports
-  across 14 routes and fails on horizontal overflow, tap targets under 40px,
-  type under 11.5px, content stuck mid-transition, rendered `undefined`, leaked
-  CSS escape sequences, and text below WCAG AA contrast.
+- Quality is asserted mechanically, not by eye: an audit drives 13 viewports
+  across 14 routes and fails on horizontal overflow, a page that can actually
+  be dragged sideways, tap targets under 40px, type under 11.5px, content stuck
+  mid-transition, rendered `undefined`, leaked CSS escape sequences, and text
+  below WCAG AA contrast.
+- The audit covers layout and colour. It does not measure smoothness, and a
+  green run has already coexisted with a phone dropping half its frames — so
+  motion work is profiled separately under CPU throttling, because unthrottled
+  desktop silicon makes everything look free. Scroll-linked motion writes
+  transforms to cached nodes and nothing else: never a custom property on an
+  ancestor, which invalidates every descendant, and never a property that can
+  trigger layout.
 - Undecided, deliberately: the Story narrative (four visible placeholders) and
   the PRD document shelf (four empty slots). The material exists but is not yet
   written or cleared; both are awaiting real content.
@@ -69,13 +85,37 @@ Chat360?") can be asked instead of hunted for.
 - Name in full: Avinashdev Ravikumar Garudapalli. Shortened to "Avinash" in the
   masthead and the desk screen.
 - "a Metacognist & Philomath" — the line on the monitor in the opening scene.
-- Light paper ground with amber and teal accents; the earlier dark-console
-  palette was deliberately replaced.
-- Sora for display, IBM Plex Sans for body, IBM Plex Mono reserved for measured
-  values and never for decorative labels.
+- Black ground (`#000000`) with a single acid-lime accent (`#9AEE30`), and
+  full-bleed lime sections that swap the whole viewport rather than gradating
+  into it. The palette is sampled from a reference the owner supplied, not
+  chosen in the abstract.
+
+  This reverses an earlier decision. The site ran a light paper ground with
+  amber and teal for a while, which itself replaced an original dark console.
+  The light palette was not abandoned because it failed — it was replaced
+  because the owner chose a reference direction and asked for it. Anyone
+  reading this later should know the light theme is recoverable from history
+  (`scripts/relight.mjs` maps one way, `scripts/redark.mjs` the other) rather
+  than assume it was a mistake.
+- Sora for display, IBM Plex Sans for body, IBM Plex Mono for the instrument
+  register: the HUD readouts, section eyebrows and card labels, all tracked out
+  and uppercased. Mono is no longer reserved strictly for measured values.
 - The desk-scene opening, with the next section previewed inside the monitor.
-- Material 3 supplies the interaction system — motion, elevation, shape, state
-  layers. Typography and palette stay bespoke.
+- A technical HUD across the top rail — availability lamp, city and the
+  visitor's own local clock, coordinates — plus a vertical label on the right
+  margin. It is instrumentation, and it is real: Mumbai's actual coordinates
+  and the visitor's actual clock, never invented telemetry. It is hidden from
+  assistive technology, and its cells drop one at a time as the rail runs out
+  of room rather than disappearing at a single breakpoint.
+- Motion is the argument as much as the layout: a paced desk intro, scramble
+  decode on headings, a pinned horizontal track that turns vertical scroll into
+  horizontal travel, and an ambient particle field that answers to scroll and
+  to the pointer. GSAP with ScrollTrigger drives it, Lenis eases the wheel, and
+  every one of them degrades to a static, readable page when the vendored
+  scripts are absent or motion is reduced.
+- Material 3 still supplies the shape scale, state layers and easing curves.
+  Its elevation model does not survive on a black ground or a lime field, where
+  the reference uses hard edges instead.
 
 ## Evidence on Hand
 
