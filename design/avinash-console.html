@@ -309,9 +309,17 @@
     pointer-events: none;
     display: block;
   }
-  /* Everything real sits above the field. The topbar and drawer already carry
-     their own higher stacking, so only the page body needs lifting. */
-  .wrap, #stage { position: relative; z-index: 1; }
+  /* Everything real sits above the field. The topbar, drawer and desk stage
+     already carry their own higher stacking, so only the page body needs
+     lifting.
+
+     Only .wrap. An earlier version listed #stage here too, and because an ID
+     outranks a class it replaced the stage's position: fixed with relative —
+     so the desk stopped being pinned to the viewport and scrolled away up the
+     page instead of zooming in place. The intro looked like the page simply
+     sliding down. The stage already sits at z-index 55 and needs nothing from
+     this rule. */
+  .wrap { position: relative; z-index: 1; }
   @media (prefers-reduced-motion: reduce) { #dust { display: none; } }
 
   @media (pointer: coarse) {
@@ -5021,15 +5029,33 @@
       // Querying these per frame would put a selector match back in the hot
       // path, which is what this change exists to remove.
       var movers = [];
-      function add(sel, rate) {
-        Array.prototype.forEach.call(el.querySelectorAll(sel), function (n) {
-          movers.push({ el: n, rate: rate, last: "" });
+      function add(sel, rate, vary) {
+        Array.prototype.forEach.call(el.querySelectorAll(sel), function (n, i) {
+          /* Siblings get slightly different rates so a row of cards does not
+             travel as one slab. The spread is deliberately small — the point
+             is that the group has depth, not that the items disagree. */
+          var r = vary ? rate * (1 + ((i % 3) - 1) * 0.28) : rate;
+          movers.push({ el: n, rate: r, last: "" });
         });
       }
+      /* Every element that can move without costing layout does. These are all
+         transform-only writes on a handful of cached nodes — the property is
+         composited, so the cost is the same whether five elements move or
+         fifty, and none of them can trigger a reflow the way the old
+         letter-spacing rule did. */
       add(".sec-head", -30);
       add(".readouts, .doors, .work-list, .beyond-grid", 18);
       add(".story-block > div", -14);
       add(".xp-when", -20);
+      // content blocks, each at its own rate so the page has layers
+      add(".lede", -11);
+      add(".ro", 13, true);
+      add(".live-card, .prd-item, .work-item", 15, true);
+      add(".xp-row", 9, true);
+      add(".rel a, .contact-cell", 12, true);
+      add(".plate, .field", 17);
+      add(".hs-card", 0);        // the horizontal track owns its own motion
+      add(".sec-head .idx", -38); // was a letter-spacing tween; now it travels
       return { el: el, top: r.top + window.scrollY, h: r.height, movers: movers };
     });
 
@@ -5300,6 +5326,7 @@
       var off = prog - 0.5;
       for (var mi = 0; mi < sc.movers.length; mi++) {
         var mv = sc.movers[mi];
+        if (!mv.rate) continue;   // registered for clarity, moves on its own
         var t = "translate3d(0," + (off * mv.rate).toFixed(2) + "px,0)";
         // Skip the write when the value has not changed: an identical style
         // assignment still invalidates.
