@@ -15,6 +15,7 @@
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; }
+
   img { max-width: 100%; }
   [hidden] { display: none !important; }
 </style>
@@ -336,6 +337,10 @@
   .wrap, #stage { position: relative; z-index: 1; }
   @media (prefers-reduced-motion: reduce) { #dust { display: none; } }
 
+  @media (pointer: coarse) {
+    .topbar { backdrop-filter: none; background: rgba(6, 8, 5, .96); }
+  }
+
   /* ---------- HUD chrome ----------
      Small tracked-out mono readouts across the top rail, and a vertical
      label pinned to the right margin. Purely instrumentation: it carries the
@@ -343,9 +348,10 @@
      from assistive tech — a screen reader should reach the navigation, not a
      recital of coordinates. */
   .hud {
-    display: none;
-    gap: clamp(18px, 3vw, 46px);
-    margin-left: clamp(18px, 4vw, 60px);
+    display: flex;
+    align-items: center;
+    gap: clamp(14px, 3vw, 46px);
+    margin-left: clamp(12px, 4vw, 60px);
     font-family: var(--f-mono);
     font-size: 9.5px;
     line-height: 1.45;
@@ -353,10 +359,25 @@
     text-transform: uppercase;
     color: var(--dim-2);
     white-space: nowrap;
+    /* Never push the bar wider than the window. A flex item defaults to
+       min-width:auto, which refuses to shrink below its content — that is
+       exactly how this pushed the nav and menu button off-screen and put
+       161px of horizontal overflow on every laptop width from 1180 to 1355. */
+    min-width: 0;
+    overflow: hidden;
   }
-  /* Below 1180px the rail has to hold the mark, six nav items and a CTA;
-     the readouts are the first thing that can go. */
-  @media (min-width: 1180px) { .hud { display: flex; } }
+  /* The readouts appear in stages, because the rail has to hold the mark, six
+     nav items, a CTA and the menu button before any of this. Rather than
+     hiding the whole block on anything but a wide desktop — which left the
+     phone with none of the reference's character — the cells drop one at a
+     time as room runs out, and the status light survives everywhere. */
+  @media (max-width: 1399px) { .hud-geo { display: none; } }
+  @media (max-width: 1140px) { .hud-place { display: none; } }
+  /* Below this the label goes and the lamp stands alone. */
+  @media (max-width: 560px) {
+    .hud-status { font-size: 0; gap: 0; }
+    .hud { margin-left: 10px; }
+  }
   .hud-sub { color: var(--signal-deep); }
   .hud-status { display: flex; align-items: center; gap: 7px; }
   .hud-led {
@@ -401,6 +422,12 @@
     gap: 24px;
     padding: 0 20px;
     background: rgba(10, 12, 9,.88);
+    /* Only where the device is likely to afford it. backdrop-filter repaints
+       the blurred strip every frame that content moves beneath it, which on a
+       throttled tablet was a measurable share of the dropped frames. A coarse
+       pointer is the best proxy available for "touch device, tighter budget";
+       the fallback is the same bar at a higher opacity, which reads almost
+       identically. */
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--rule);
     box-shadow: var(--md-e1);
@@ -1670,30 +1697,27 @@
   }
 
   /* ---------- scroll scenes ----------
-     Each [data-scene] section gets a live --p (0..1) as it crosses the
-     viewport, so its parts can move at their own rates. */
-  [data-scene] { --p: .5; }
+     Each [data-scene] section's parts move at their own rate as it crosses
+     the viewport. The offsets are written straight onto the handful of
+     elements that move, from JS, rather than driven off a --p custom
+     property on the section.
 
-  body.anim [data-scene] .sec-head {
-    transform: translate3d(0, calc((var(--p) - .5) * -30px), 0);
-    will-change: transform;
-  }
-  body.anim [data-scene] .sec-head .idx {
-    letter-spacing: calc(.18em + (1 - var(--p)) * .06em);
-  }
-  body.anim [data-scene] .readouts,
-  body.anim [data-scene] .doors,
-  body.anim [data-scene] .work-list,
-  body.anim [data-scene] .beyond-grid {
-    transform: translate3d(0, calc((var(--p) - .5) * 18px), 0);
-    will-change: transform;
-  }
-  body.anim [data-scene] .story-block > div {
-    transform: translate3d(0, calc((var(--p) - .5) * -14px), 0);
-  }
-  body.anim [data-scene] .xp-when {
-    transform: translate3d(0, calc((var(--p) - .5) * -20px), 0);
-  }
+     That indirection was the single biggest cost on a phone. Setting a
+     custom property on a section invalidates style for every descendant that
+     could read it, not just the ones that do — measured at 848 style recalcs
+     and 1806ms of RecalcStyle during one throttled scroll, against 392ms of
+     actual script. Writing the transform to the five or so moving elements
+     invalidates those elements and nothing else.
+
+     The .idx letter-spacing animation is gone outright. Animating
+     letter-spacing reflows the line on every frame — it was most of the 329
+     layouts in that same scroll — and it bought a shift of six hundredths of
+     an em that nobody has ever noticed.
+
+     will-change is gone too: these elements get a fresh transform every frame
+     while their section is on screen, so they are already promoted, and the
+     hint only costs memory on a device that has least of it. */
+  [data-scene] { --p: .5; }
 
   @media (prefers-reduced-motion: reduce) {
     body.anim [data-scene] * { transform: none !important; }
@@ -1740,10 +1764,13 @@
   }
 
   /* Sideways reveals only where the centred container leaves room for the
-     offset. Below ~1100px the content box reaches close enough to the
-     viewport edge that a 34px shift pushes past it and creates a scrollbar. */
+     offset. Below ~1160px the content box reaches close enough to the
+     viewport edge that a 34px shift pushes past it and creates a scrollbar.
+     This said 1100 until a width sweep caught 4px of real horizontal scroll
+     at exactly that width — the boundary was set to where the problem starts
+     rather than safely clear of it. */
   body.anim:not(.gsap) .rv-l, body.anim:not(.gsap) .rv-r { transform: translate3d(0, 30px, 0); }
-  @media (min-width: 1100px) {
+  @media (min-width: 1160px) {
     body.anim:not(.gsap) .rv-l { transform: translate3d(-34px, 0, 0); }
     body.anim:not(.gsap) .rv-r { transform: translate3d(34px, 0, 0); }
   }
@@ -5013,7 +5040,20 @@
 
     M.scenes = Array.prototype.map.call(document.querySelectorAll("[data-scene]"), function (el) {
       var r = el.getBoundingClientRect();
-      return { el: el, top: r.top + window.scrollY, h: r.height };
+      // Cache the moving parts once per measure, with the rate each moves at.
+      // Querying these per frame would put a selector match back in the hot
+      // path, which is what this change exists to remove.
+      var movers = [];
+      function add(sel, rate) {
+        Array.prototype.forEach.call(el.querySelectorAll(sel), function (n) {
+          movers.push({ el: n, rate: rate, last: "" });
+        });
+      }
+      add(".sec-head", -30);
+      add(".readouts, .doors, .work-list, .beyond-grid", 18);
+      add(".story-block > div", -14);
+      add(".xp-when", -20);
+      return { el: el, top: r.top + window.scrollY, h: r.height, movers: movers };
     });
 
     var trace = document.querySelector(".trace");
@@ -5279,7 +5319,15 @@
       var sc = M.scenes[si];
       if (sc.top - csy > M.vh * 1.4 || sc.top + sc.h - csy < -M.vh * 0.4) continue;
       var prog = (csy + M.vh - sc.top) / (sc.h + M.vh);
-      sc.el.style.setProperty("--p", (prog < 0 ? 0 : prog > 1 ? 1 : prog).toFixed(4));
+      prog = prog < 0 ? 0 : prog > 1 ? 1 : prog;
+      var off = prog - 0.5;
+      for (var mi = 0; mi < sc.movers.length; mi++) {
+        var mv = sc.movers[mi];
+        var t = "translate3d(0," + (off * mv.rate).toFixed(2) + "px,0)";
+        // Skip the write when the value has not changed: an identical style
+        // assignment still invalidates.
+        if (mv.last !== t) { mv.el.style.transform = t; mv.last = t; }
+      }
     }
 
     // layered parallax across sections
@@ -5390,9 +5438,13 @@
     var t = 0;             // flow-field clock
 
     function resize() {
-      // Cap DPR at 2: a 3x phone buffer is 2.25x the pixels for no visible
-      // gain on sub-2px dots.
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      /* Fill rate is the whole cost of this effect. A 2x buffer on a tablet is
+         3.1M pixels cleared and redrawn every frame to draw dots under 2px
+         across — the buffer resolution buys nothing at that size. Coarse
+         pointers get 1x, which is a quarter of the fill for no visible
+         difference; mice keep 2x since a desktop GPU does not notice. */
+      var coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      dpr = coarse ? 1 : Math.min(window.devicePixelRatio || 1, 2);
       w = cv.clientWidth; h = cv.clientHeight;
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
@@ -5636,7 +5688,11 @@
       // Sideways variants only apply above 1100px; below it the CSS keeps them
       // vertical because a 34px shift reaches past the content box and opens a
       // scrollbar. Reading the class here has to respect the same breakpoint.
-      var wide = window.matchMedia("(min-width: 1100px)").matches;
+      // 1160, not 1100. At exactly 1100 the 34px offset still reached past the
+      // content box and produced 4px of real horizontal scroll on the case
+      // study — the precise failure the breakpoint exists to prevent. The
+      // extra 60px is the margin that was missing.
+      var wide = window.matchMedia("(min-width: 1160px)").matches;
       if (n.classList.contains("rv-l") && wide) from.x = -34;
       else if (n.classList.contains("rv-r") && wide) from.x = 34;
       else if (n.classList.contains("rv-scale")) { from.y = 26; from.scale = 0.975; }

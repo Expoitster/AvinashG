@@ -29,6 +29,12 @@ const DEVICES = [
   { name: "Tablet · Galaxy Tab (800×1280)",    w: 800,  h: 1280, dpr: 2,   touch: true,  class: "tablet" },
   { name: "Tablet · 768×1024 portrait",        w: 768,  h: 1024, dpr: 2,   touch: true,  class: "tablet" },
   { name: "Tablet · 1024×768 landscape",       w: 1024, h: 768,  dpr: 2,   touch: true,  class: "tablet" },
+  // Mid widths matter as much as the extremes: the breakpoint bands between
+  // tablet and desktop are where a rail runs out of room, and nothing in this
+  // list covered 1100-1360 until a sweep found 161px of overflow living there.
+  { name: "Laptop · 1100×700",                 w: 1100, h: 700,  dpr: 1,   touch: false, class: "desktop" },
+  { name: "Laptop · 1180×820",                 w: 1180, h: 820,  dpr: 2,   touch: false, class: "desktop" },
+  { name: "Laptop · 1280×800",                 w: 1280, h: 800,  dpr: 1,   touch: false, class: "desktop" },
   { name: "Desktop · 1366×768",                w: 1366, h: 768,  dpr: 1,   touch: false, class: "desktop" },
   { name: "Desktop · 1920×1080",               w: 1920, h: 1080, dpr: 1,   touch: false, class: "desktop" },
 ];
@@ -222,6 +228,18 @@ function audit(isTouch) {
       const r = await page.evaluate(audit, d.touch);
 
       if (r.overflow > 1) fail(d.name, route, `horizontal overflow ${r.overflow}px [${r.offenders.join(", ")}]`);
+      // scrollWidth alone over-reports: an element wider than the window inside
+      // an overflow:hidden parent is clipped and the visitor never sees it. The
+      // question that matters is whether the page can actually be dragged
+      // sideways, so ask it directly.
+      const sideways = await page.evaluate(() => {
+        const before = window.scrollX;
+        window.scrollTo(9999, window.scrollY);
+        const after = window.scrollX;
+        window.scrollTo(before, window.scrollY);
+        return after > before + 1;
+      });
+      if (sideways) fail(d.name, route, "page can be scrolled horizontally");
       if (r.small.length) warn(d.name, route, `tap target <40px: ${r.small.join(", ")}`);
       if (r.tiny.length) fail(d.name, route, `text under 11.5px: ${r.tiny.join(", ")}`);
       if (r.stuck.length) fail(d.name, route, `content stuck hidden: ${r.stuck.join(", ")}`);

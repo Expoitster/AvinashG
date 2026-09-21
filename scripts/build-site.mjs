@@ -81,6 +81,7 @@ const page = `<!doctype html>
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; }
+
   img { max-width: 100%; }
   [hidden] { display: none !important; }
 </style>
