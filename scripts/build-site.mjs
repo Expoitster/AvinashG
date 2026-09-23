@@ -81,6 +81,12 @@ const page = `<!doctype html>
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; }
+  /* The intro lives at the very top of the page, so any swipe that ran past
+     the top edge fired Chrome's pull-to-refresh and reloaded the whole site
+     mid-animation — caught on a real phone recording, where it looked like the
+     intro randomly restarting. overscroll-behavior does not make html a scroll
+     container, so unlike overflow-x: clip it leaves position: sticky alone. */
+  html { overscroll-behavior-y: none; }
 
   img { max-width: 100%; }
   [hidden] { display: none !important; }

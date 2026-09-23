@@ -15,6 +15,12 @@
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; }
+  /* The intro lives at the very top of the page, so any swipe that ran past
+     the top edge fired Chrome's pull-to-refresh and reloaded the whole site
+     mid-animation — caught on a real phone recording, where it looked like the
+     intro randomly restarting. overscroll-behavior does not make html a scroll
+     container, so unlike overflow-x: clip it leaves position: sticky alone. */
+  html { overscroll-behavior-y: none; }
 
   img { max-width: 100%; }
   [hidden] { display: none !important; }
@@ -1235,6 +1241,21 @@
      immediately shrunk back to the viewport. */
   @media (max-aspect-ratio: 9 / 13) {
     .stage-inner { width: 118vw; flex: none; }
+    /* The scene ends at the listener's headphones, a hard horizontal edge.
+       Centred on a tall screen that edge sat mid-phone with black underneath,
+       so the desk looked sliced off — reported as "cut from below".
+
+       Two alternatives were tried and rejected. Growing the scene past 118vw
+       crops "Avinash" off the monitor, which already spans the full width at
+       this size. Seating the scene on the bottom edge removed the slice but
+       emptied the top half of the screen, which is the "not full screen"
+       complaint from before. The edge itself was the problem, so the bottom
+       of the scene now fades into the ground: it reads as a vignette, and the
+       monitor stays centred with the space balanced above and below. */
+    .stage-inner {
+      -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+    }
   }
   .scene { display: block; width: 100%; height: auto; }
 
@@ -5242,6 +5263,14 @@
     applyIntro(clamp01(M.introP));
   }
 
+  // Portrait screens get a different handover and framing: see applyIntro.
+  var portraitIntro = window.matchMedia && window.matchMedia("(orientation: portrait)").matches;
+  if (window.matchMedia) {
+    var pq = window.matchMedia("(orientation: portrait)");
+    var onPq = function () { portraitIntro = pq.matches; };
+    if (pq.addEventListener) pq.addEventListener("change", onPq); else if (pq.addListener) pq.addListener(onPq);
+  }
+
   function introSpan() {
     var sp = el("spacer");
     return Math.max(1, sp ? sp.offsetHeight : M.vh * 1.2);
@@ -5372,7 +5401,20 @@
     var scrText = el("scrText");
     if (scrText) scrText.setAttribute("opacity", (1 - handover).toFixed(3));
     var prev = el("scrPreview");
-    if (prev) prev.setAttribute("opacity", handover.toFixed(3));
+    /* On a portrait screen the preview leaves the monitor before the desk
+       starts to dissolve.
+
+       The preview is a copy of the page. On a landscape screen the zoom makes
+       the monitor fill the viewport, so the copy lands on top of the real page
+       and the dissolve is seamless. On a portrait phone the monitor is a small
+       part of a wide scene and cannot fill the screen, so for the whole
+       dissolve the visitor saw two copies of the same headline at two sizes,
+       misaligned — recorded on a real phone, and exactly the flicker that was
+       reported. Clearing the monitor first means only one copy of the page is
+       ever on screen. */
+    var prevOp = handover;
+    if (portraitIntro) prevOp *= 1 - clamp01((p - 0.48) / 0.12);
+    if (prev) prev.setAttribute("opacity", prevOp.toFixed(3));
 
     // Then the desk dissolves and the real page is simply behind it.
     var fadeFrom = 0.62;
@@ -5776,7 +5818,12 @@
   function scrambleIn(node, delay) {
     if (!hasGsap() || typeof window.ScrambleTextPlugin === "undefined") return null;
     var text = (node.textContent || "").trim();
-    if (!text || text.length > 90) return null;
+    /* Short headings only. The reference scrambles labels a few words long,
+       which resolve before anyone starts reading. At 90 the limit let the
+       76-character hero line through, and on a phone that line decoded as
+       rows of random glyphs through the intro's dissolve — recorded as
+       "AVQ-OS47UYKRM" across the headline. */
+    if (!text || text.length > 40) return null;
     return window.gsap.to(node, {
       duration: Math.min(0.5 + text.length * 0.018, 1.4),
       delay: delay || 0,
